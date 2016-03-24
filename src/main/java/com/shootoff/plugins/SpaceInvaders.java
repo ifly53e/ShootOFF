@@ -19,6 +19,8 @@
 package com.shootoff.plugins;
 
 import javafx.scene.text.Font;
+
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,6 +110,15 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 		startExercise();
 	}// end init
 
+	/*
+	 * Load a sound file from the exercise's JAR file into a
+	 * BufferedInputStream. This specific type of stream is required to play
+	 * audio.
+	 */
+	private InputStream getSoundStream(String soundResource) {
+	    return new BufferedInputStream(SpaceInvaders.class.getResourceAsStream(soundResource));
+	}
+	
 	public long getBeepTime() {
 		return beepTime;
 	}
@@ -124,7 +135,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 
 	private void startExercise() {
 		try {
-			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("sounds/ufo_highpitch.wav"));
+			AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("/ufo_highpitch.wav"));
 			clip = AudioSystem.getClip();
 			clip.open(inputStream);
 
@@ -153,11 +164,11 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 
 		textStartPosY = (int) (super.getArenaHeight() * .25);
 		for (int xPos = (int) (super.getArenaWidth() * .2); xPos < 1000; xPos = xPos + 50) {
-			addTargets(shootTargets, "targets/invader3.target", 1, xPos, textStartPosY);// 250
-			addTargets(shootTargets, "targets/invader2.target", 1, xPos, textStartPosY + 50);
-			addTargets(shootTargets, "targets/invader2.target", 1, xPos, textStartPosY + 100);
-			addTargets(shootTargets, "targets/invader1.target", 1, xPos, textStartPosY + 150);
-			addTargets(shootTargets, "targets/invader1.target", 1, xPos, textStartPosY + 200);
+			addTargets(shootTargets, "/invader3.target", 1, xPos, textStartPosY);// 250
+			addTargets(shootTargets, "/invader2.target", 1, xPos, textStartPosY + 50);
+			addTargets(shootTargets, "/invader2.target", 1, xPos, textStartPosY + 100);
+			addTargets(shootTargets, "/invader1.target", 1, xPos, textStartPosY + 150);
+			addTargets(shootTargets, "/invader1.target", 1, xPos, textStartPosY + 200);
 		}
 
 		shootTargetsRoleCall = shootTargets;
@@ -171,7 +182,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 				String.format("SCORE<1>\tHI-SCORE\tKILLS<1>  %n  %d \t\t  %04d \t\t   %d", score, highScore, hitCount),
 				textStartPosX, 0, myColorFontBackground, Color.WHITE, new Font("OCR A Extended", fontSize));
 
-		String resourceFilename = "arena/backgrounds/SpaceInvaders_BG.gif";
+		String resourceFilename = "/SpaceInvaders_BG.gif";
 		InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
 		LocatedImage img = new LocatedImage(is, resourceFilename);
 		super.setArenaBackground(img);
@@ -306,7 +317,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 			return;
 		} // end if
 		else {
-			playSound("sounds/fastinvader" + soundInc + ".wav");
+			playSound("/fastinvader" + soundInc + ".wav");
 			if (soundInc <= 3) {
 				soundInc++;
 			} else {
@@ -534,7 +545,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 			// the shot was taken but missed the target
 			score = score - 1;
 			misses++;
-			playSound("sounds/shoot.wav");
+			playSound("/shoot.wav");
 			if (score < 0) {
 				myColorFontBackground = Color.BLACK;
 			} else {
