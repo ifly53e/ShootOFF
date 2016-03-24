@@ -19,10 +19,8 @@
 package com.shootoff.camera.shotdetection;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -183,7 +181,12 @@ public final class ShotDetectionManager {
 
 		if (increase < MINIMUM_BRIGHTNESS_INCREASE) return false;
 
-		final int threshold = ((MAXIMUM_LUM_VALUE - lumsMovingAverage) / 4);
+		final int threshold = (MAXIMUM_LUM_VALUE - lumsMovingAverage) >> 2; // >>
+																			// 2
+																			// equivalent
+																			// to
+																			// /
+																			// 4
 
 		final int dynamic_increase = (int) ((MAXIMUM_LUM_VALUE - threshold)
 				* ((double) avgThresholdPixels / (double) MAXIMUM_THRESHOLD_PIXELS_FOR_AVG));
@@ -247,7 +250,7 @@ public final class ShotDetectionManager {
 			}
 
 			if (thresholdPixelsSize >= getMinimumShotDimension() && !isExcessiveMotion(thresholdPixelsSize)) {
-				final ArrayList<PixelCluster> clusters = clusterPixels(thresholdPixels);
+				final Set<PixelCluster> clusters = clusterPixels(thresholdPixels);
 
 				if (logger.isTraceEnabled()) {
 					logger.trace("thresholdPixels {}", thresholdPixelsSize);
@@ -281,15 +284,15 @@ public final class ShotDetectionManager {
 		}
 	}
 
-	private ArrayList<PixelCluster> clusterPixels(final Set<Pixel> thresholdPixels) {
+	private Set<PixelCluster> clusterPixels(final Set<Pixel> thresholdPixels) {
 		final PixelClusterManager pixelClusterManager = new PixelClusterManager(thresholdPixels, this);
 		pixelClusterManager.clusterPixels();
-		final ArrayList<PixelCluster> clusters = pixelClusterManager.dumpClusters();
+		final Set<PixelCluster> clusters = pixelClusterManager.dumpClusters();
 
 		return clusters;
 	}
 
-	private void detectShots(final Mat workingFrame, final List<PixelCluster> clusters) {
+	private void detectShots(final Mat workingFrame, final Set<PixelCluster> clusters) {
 		for (final PixelCluster cluster : clusters) {
 			addShot(workingFrame, cluster);
 		}
@@ -364,9 +367,9 @@ public final class ShotDetectionManager {
 				final int startX = subWidth * sectorX;
 				final int startY = subHeight * sectorY;
 
-				for (Integer y = startY; y < startY + subHeight; y++) {
+				for (int y = startY; y < startY + subHeight; y++) {
 					final int yOffset = y * cols;
-					for (Integer x = startX; x < startX + subWidth; x++) {
+					for (int x = startX; x < startX + subWidth; x++) {
 						final int currentH = workingFramePrimitive[(yOffset + x) * channels] & 0xFF;
 						final int currentS = workingFramePrimitive[(yOffset + x) * channels + 1] & 0xFF;
 						final int currentV = workingFramePrimitive[(yOffset + x) * channels + 2] & 0xFF;

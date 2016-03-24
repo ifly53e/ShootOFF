@@ -18,12 +18,18 @@
 
 package com.shootoff.gui;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.shootoff.camera.Shot;
 import com.shootoff.config.Configuration;
 import com.shootoff.targets.ImageRegion;
 import com.shootoff.targets.RegionType;
@@ -31,11 +37,14 @@ import com.shootoff.targets.TargetRegion;
 import com.shootoff.targets.animation.SpriteAnimation;
 
 import javafx.animation.Animation.Status;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Bounds;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -47,6 +56,8 @@ import javafx.scene.input.MouseEvent;
  * @author phrack
  */
 public class Target {
+	private final Logger logger = LoggerFactory.getLogger(Target.class);
+
 	protected static final int MOVEMENT_DELTA = 1;
 	protected static final int SCALE_DELTA = 1;
 	private static final int RESIZE_MARGIN = 5;
@@ -231,7 +242,7 @@ public class Target {
 			if (r.isPresent()) {
 				imageRegion = (ImageRegion) r.get();
 			} else {
-				System.err.format("Request to animate region named %s, but it " + "doesn't exist.", args.get(0));
+				logger.error("Request to animate region named {}, but it doesn't exist.", args.get(0));
 				return;
 			}
 		}
@@ -250,13 +261,13 @@ public class Target {
 				});
 			}
 		} else {
-			System.err.println("Request to animate region, but region does " + "not contain an animation.");
+			logger.error("Request to animate region, but region does not contain an animation.");
 		}
 	}
 
 	public void reverseAnimation(TargetRegion region) {
 		if (region.getType() != RegionType.IMAGE) {
-			System.err.println("A reversal was requested on a non-image region.");
+			logger.error("A reversal was requested on a non-image region.");
 			return;
 		}
 
@@ -273,8 +284,92 @@ public class Target {
 				animation.reverse();
 			}
 		} else {
-			System.err.println("A reversal was requested on an image region that isn't animated.");
+			logger.error("A reversal was requested on an image region that isn't animated.");
 		}
+	}
+
+	public Optional<Hit> isHit(Shot shot) {
+		if (targetGroup.getBoundsInParent().contains(shot.getX(), shot.getY())) {
+			// Target was hit, see if a specific region was hit
+			for (int i = targetGroup.getChildren().size() - 1; i >= 0; i--) {
+				Node node = targetGroup.getChildren().get(i);
+
+				Bounds nodeBounds = targetGroup.getLocalToParentTransform().transform(node.getBoundsInParent());
+
+				int adjustedX = (int) (shot.getX() - nodeBounds.getMinX());
+				int adjustedY = (int) (shot.getY() - nodeBounds.getMinY());
+
+				if (nodeBounds.contains(shot.getX(), shot.getY())) {
+					// If we hit an image region on a transparent pixel,
+					// ignore it
+					TargetRegion region = (TargetRegion) node;
+					if (region.getType() == RegionType.IMAGE) {
+						// The image you get from the image view is its
+						// original size. We need to resize it if it has
+						// changed size to accurately determine if a pixel
+						// is transparent
+						Image currentImage = ((ImageRegion) region).getImage();
+
+						if (adjustedX < 0 || adjustedY < 0) {
+							logger.debug(
+									"An adjusted pixel is negative: Adjusted ({}, {}), Original ({}, {}), "
+											+ " nodeBounds.getMin ({}, {})",
+									adjustedX, adjustedY, shot.getX(), shot.getY(), nodeBounds.getMaxX(),
+									nodeBounds.getMinY());
+							return Optional.empty();
+						}
+
+						if (Math.abs(currentImage.getWidth() - nodeBounds.getWidth()) > .0000001
+								|| Math.abs(currentImage.getHeight() - nodeBounds.getHeight()) > .0000001) {
+
+							BufferedImage bufferedOriginal = SwingFXUtils.fromFXImage(currentImage, null);
+
+							java.awt.Image tmp = bufferedOriginal.getScaledInstance((int) nodeBounds.getWidth(),
+									(int) nodeBounds.getHeight(), java.awt.Image.SCALE_SMOOTH);
+							BufferedImage bufferedResized = new BufferedImage((int) nodeBounds.getWidth(),
+									(int) nodeBounds.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+							Graphics2D g2d = bufferedResized.createGraphics();
+							g2d.drawImage(tmp, 0, 0, null);
+							g2d.dispose();
+
+							try {
+								if (adjustedX >= bufferedResized.getWidth() || adjustedY >= bufferedResized.getHeight()
+										|| bufferedResized.getRGB(adjustedX, adjustedY) >> 24 == 0) {
+									continue;
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								String message = String.format(
+										"Index out of bounds while trying to find adjusted coordinate (%d, %d) "
+												+ "from original (%.2f, %.2f) in adjusted BufferedImage for target %s "
+												+ "with width = %d, height = %d",
+										adjustedX, adjustedY, shot.getX(), shot.getY(), getTargetFile().getPath(),
+										bufferedResized.getWidth(), bufferedResized.getHeight());
+								logger.error(message, e);
+								return Optional.empty();
+							}
+						} else {
+							if (adjustedX >= currentImage.getWidth() || adjustedY >= currentImage.getHeight()
+									|| currentImage.getPixelReader().getArgb(adjustedX, adjustedY) >> 24 == 0) {
+								continue;
+							}
+						}
+					} else {
+						// The shot is in the bounding box but make sure it
+						// is in the shape's
+						// fill otherwise we can get a shot detected where
+						// there isn't actually
+						// a region showing
+						Point2D localCoords = targetGroup.parentToLocal(shot.getX(), shot.getY());
+						if (!node.contains(localCoords)) continue;
+					}
+
+					return Optional.of(new Hit(this, (TargetRegion) node, adjustedX, adjustedY));
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	private void mousePressed() {

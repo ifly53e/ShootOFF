@@ -61,7 +61,6 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -619,110 +618,34 @@ public class CanvasManager implements CameraView {
 		// overlap
 		for (ListIterator<Target> li = targets.listIterator(targets.size()); li.hasPrevious();) {
 			Target target = li.previous();
-			Group targetGroup = target.getTargetGroup();
 
-			if (targetGroup.getBoundsInParent().contains(shot.getX(), shot.getY())) {
-				// Target was hit, see if a specific region was hit
-				for (int i = targetGroup.getChildren().size() - 1; i >= 0; i--) {
-					Node node = targetGroup.getChildren().get(i);
+			Optional<Hit> hit = target.isHit(shot);
 
-					Bounds nodeBounds = targetGroup.getLocalToParentTransform().transform(node.getBoundsInParent());
+			if (hit.isPresent()) {
+				TargetRegion region = hit.get().getHitRegion();
 
-					int adjustedX = (int) (shot.getX() - nodeBounds.getMinX());
-					int adjustedY = (int) (shot.getY() - nodeBounds.getMinY());
+				if (config.inDebugMode()) {
+					Map<String, String> tags = region.getAllTags();
 
-					if (nodeBounds.contains(shot.getX(), shot.getY())) {
-						// If we hit an image region on a transparent pixel,
-						// ignore it
-						TargetRegion region = (TargetRegion) node;
-						if (region.getType() == RegionType.IMAGE) {
-							// The image you get from the image view is its
-							// original size. We need to resize it if it has
-							// changed size to accurately determine if a pixel
-							// is transparent
-							Image currentImage = ((ImageRegion) region).getImage();
-
-							if (adjustedX < 0 || adjustedY < 0) {
-								logger.debug(
-										"An adjusted pixel is negative: Adjusted ({}, {}), Original ({}, {}), "
-												+ " nodeBounds.getMin ({}, {})",
-										adjustedX, adjustedY, shot.getX(), shot.getY(), nodeBounds.getMaxX(),
-										nodeBounds.getMinY());
-								return Optional.empty();
-							}
-
-							if (Math.abs(currentImage.getWidth() - nodeBounds.getWidth()) > .0000001
-									|| Math.abs(currentImage.getHeight() - nodeBounds.getHeight()) > .0000001) {
-
-								BufferedImage bufferedOriginal = SwingFXUtils.fromFXImage(currentImage, null);
-
-								java.awt.Image tmp = bufferedOriginal.getScaledInstance((int) nodeBounds.getWidth(),
-										(int) nodeBounds.getHeight(), java.awt.Image.SCALE_SMOOTH);
-								BufferedImage bufferedResized = new BufferedImage((int) nodeBounds.getWidth(),
-										(int) nodeBounds.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-								Graphics2D g2d = bufferedResized.createGraphics();
-								g2d.drawImage(tmp, 0, 0, null);
-								g2d.dispose();
-
-								try {
-									if (adjustedX >= bufferedResized.getWidth()
-											|| adjustedY >= bufferedResized.getHeight()
-											|| bufferedResized.getRGB(adjustedX, adjustedY) >> 24 == 0) {
-										continue;
-									}
-								} catch (ArrayIndexOutOfBoundsException e) {
-									String message = String.format(
-											"Index out of bounds while trying to find adjusted coordinate (%d, %d) "
-													+ "from original (%.2f, %.2f) in adjusted BufferedImage for target %s "
-													+ "with width = %d, height = %d",
-											adjustedX, adjustedY, shot.getX(), shot.getY(),
-											target.getTargetFile().getPath(), bufferedResized.getWidth(),
-											bufferedResized.getHeight());
-									logger.error(message, e);
-									return Optional.empty();
-								}
-							} else {
-								if (adjustedX >= currentImage.getWidth() || adjustedY >= currentImage.getHeight()
-										|| currentImage.getPixelReader().getArgb(adjustedX, adjustedY) >> 24 == 0) {
-									continue;
-								}
-							}
-						} else {
-							// The shot is in the bounding box but make sure it
-							// is in the shape's
-							// fill otherwise we can get a shot detected where
-							// there isn't actually
-							// a region showing
-							Point2D localCoords = target.getTargetGroup().parentToLocal(shot.getX(), shot.getY());
-							if (!node.contains(localCoords)) continue;
-						}
-
-						if (config.inDebugMode()) {
-							Map<String, String> tags = region.getAllTags();
-
-							StringBuilder tagList = new StringBuilder();
-							for (Iterator<Entry<String, String>> it = tags.entrySet().iterator(); it.hasNext();) {
-								Entry<String, String> entry = it.next();
-								tagList.append(entry.getKey());
-								tagList.append(":");
-								tagList.append(entry.getValue());
-								if (it.hasNext()) tagList.append(", ");
-							}
-
-							logger.debug("Processing Shot: Found Hit Region For Shot ({}, {}), Type ({}), Tags ({})",
-									shot.getX(), shot.getY(), region.getType(), tagList.toString());
-						}
-
-						if (config.getSessionRecorder().isPresent()) {
-							config.getSessionRecorder().get().recordShot(cameraName, shot, false, false,
-									Optional.of(target), Optional.of(targetGroup.getChildren().indexOf(node)),
-									videoString);
-						}
-
-						return Optional.of(new Hit(target, (TargetRegion) node, adjustedX, adjustedY));
+					StringBuilder tagList = new StringBuilder();
+					for (Iterator<Entry<String, String>> it = tags.entrySet().iterator(); it.hasNext();) {
+						Entry<String, String> entry = it.next();
+						tagList.append(entry.getKey());
+						tagList.append(":");
+						tagList.append(entry.getValue());
+						if (it.hasNext()) tagList.append(", ");
 					}
+
+					logger.debug("Processing Shot: Found Hit Region For Shot ({}, {}), Type ({}), Tags ({})",
+							shot.getX(), shot.getY(), region.getType(), tagList.toString());
 				}
+
+				if (config.getSessionRecorder().isPresent()) {
+					config.getSessionRecorder().get().recordShot(cameraName, shot, false, false, Optional.of(target),
+							Optional.of(target.getTargetGroup().getChildren().indexOf(region)), videoString);
+				}
+
+				return hit;
 			}
 		}
 
