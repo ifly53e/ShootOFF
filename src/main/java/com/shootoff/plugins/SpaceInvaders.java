@@ -118,7 +118,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 	private InputStream getSoundStream(String soundResource) {
 	    return new BufferedInputStream(SpaceInvaders.class.getResourceAsStream(soundResource));
 	}
-	
+
 	public long getBeepTime() {
 		return beepTime;
 	}
@@ -457,13 +457,13 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 		// called by updateTargets for every SpaceInvadersTarget
 		public void updateInvader() {
 			if (targetWasHit) {
-				leftImageRegion.getAnimation().get().setFrame(4);
+				leftImageRegion.getAnimation().get().setCurrentFrame(4);
 			} else {
 				if (position1) {
-					leftImageRegion.getAnimation().get().setFrame(1);
+					leftImageRegion.getAnimation().get().setCurrentFrame(1);
 					position1 = !position1;
 				} else {
-					leftImageRegion.getAnimation().get().setFrame(2);
+					leftImageRegion.getAnimation().get().setCurrentFrame(2);
 					position1 = !position1;
 				} // end else
 			} // end else
