@@ -41,15 +41,19 @@ import com.shootoff.plugins.BouncingTargets;
 import com.shootoff.plugins.DuelingTree;
 import com.shootoff.plugins.ExerciseMetadata;
 import com.shootoff.plugins.FrontSight_v3;
+import com.shootoff.plugins.HitMe3;
 import com.shootoff.plugins.ISSFStandardPistol;
 import com.shootoff.plugins.ParForScore;
 import com.shootoff.plugins.ParRandomShot;
 import com.shootoff.plugins.RandomShoot;
 import com.shootoff.plugins.ShootDontShoot;
 import com.shootoff.plugins.ShootForScore;
+import com.shootoff.plugins.SpaceInvaders;
 import com.shootoff.plugins.SteelChallenge;
 import com.shootoff.plugins.TimedHolsterDrill;
+import com.shootoff.plugins.TossUp;
 import com.shootoff.plugins.TrainingExercise;
+import com.shootoff.plugins.Trap;
 import com.shootoff.util.VersionChecker;
 
 /**
@@ -107,6 +111,10 @@ public class PluginEngine implements Runnable {
 		pluginListener.registerProjectorExercise(new ShootDontShoot());
 		pluginListener.registerProjectorExercise(new SteelChallenge());
 		pluginListener.registerProjectorExercise(new FrontSight_v3());
+		pluginListener.registerProjectorExercise(new HitMe3());
+		pluginListener.registerProjectorExercise(new Trap());
+		pluginListener.registerProjectorExercise(new SpaceInvaders());
+		pluginListener.registerProjectorExercise(new TossUp());
 	}
 
 	private boolean registerPlugin(final Path jarPath) {
