@@ -131,7 +131,31 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 					opened = false;
 					initialized = false;
 				}
+			}
 
+		} catch (UnsatisfiedLinkError exception) {
+
+			initialized = false;
+			return;
+		}
+
+
+		if (eyecamLib == null) {
+			initialized = false;
+			return;
+		}
+
+		eyecamLib.ps3eye_init();
+
+		if (eyecamLib.ps3eye_count_connected() == 1) {
+			logger.debug("Found the PS3EYE camera");
+			ps3ID = eyecamLib.ps3eye_open(0, getViewWidth(), getViewHeight(), 75,
+					eyecam.ps3eye_format.PS3EYE_FORMAT_BGR);
+			if (ps3ID != null) {
+				logger.debug("Communications with PS3Eye camera established");
+				closed = false;
+				opened = true;
+				initialized = true;
 			} else {
 				initialized = false;
 			}
@@ -144,12 +168,9 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 				logger.debug("PS3Eye camera adjusted and registered");
 			}
 
-		} catch (UnsatisfiedLinkError exception) {
-
-			initialized = false;
 		}
 
-	}
+	}// end init
 
 	public void launchCameraSettings() {
 
