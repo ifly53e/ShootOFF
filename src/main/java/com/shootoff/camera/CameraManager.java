@@ -131,6 +131,8 @@ public class CameraManager implements ObservableCloseable, CameraEventListener, 
 
 	private CameraCalibrationListener cameraCalibrationListener;
 
+	static private Thread cameraThread;
+
 	public void setCalibrationManager(CameraCalibrationListener calibrationManager) {
 		this.cameraCalibrationListener = calibrationManager;
 	}
@@ -216,8 +218,8 @@ public class CameraManager implements ObservableCloseable, CameraEventListener, 
 			if (logger.isDebugEnabled()) logger.debug("starting camera thread {}", camera.getName());
 			final String threadName = String.format("Shot detection %s %s", camera.getName(),
 					shotDetector.getClass().getName());
-			new Thread(camera, threadName).start();
 
+			new Thread(camera, threadName).start();
 		}
 
 		if (shotDetector instanceof ShotYieldingShotDetector)
@@ -767,6 +769,9 @@ public class CameraManager implements ObservableCloseable, CameraEventListener, 
 		if (camera instanceof SarxosCaptureCamera) {
 			((SarxosCaptureCamera) camera).launchCameraSettings();
 		}else if (camera instanceof PS3EyeCamera) {
+			((PS3EyeCamera) camera).launchCameraSettings();
+		}
+		if (camera instanceof PS3EyeCamera){
 			((PS3EyeCamera) camera).launchCameraSettings();
 		}
 	}
