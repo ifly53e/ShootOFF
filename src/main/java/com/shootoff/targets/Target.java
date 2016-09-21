@@ -11,6 +11,7 @@ import com.shootoff.gui.TargetView.TargetSelectionListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.Node;
 
 /**
@@ -73,6 +74,8 @@ public interface Target {
 	String getTag(String name);
 
 	Map<String, String> getAllTags();
+	
+	public Group getTargetGroup();
 	
 	void setTargetSelectionListener(TargetSelectionListener selectionListener);
 }

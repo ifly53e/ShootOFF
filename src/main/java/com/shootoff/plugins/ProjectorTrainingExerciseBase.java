@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -52,7 +52,7 @@ import com.shootoff.targets.Target;
  * (i.e. those that require a projector) should extend this class. If the
  * exercise is not intended to only work with a projector, extend
  * {@link TrainingExerciseBase} instead.
- * 
+ *
  * @author phrack
  */
 public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
@@ -98,16 +98,16 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	/**
 	 * Add a target to the projector arena at specific coordinates.
-	 * 
+	 *
 	 * @param target
 	 *            the file to load the target from
 	 * @param x
 	 *            the top left x coordinate of the target
 	 * @param y
 	 *            the top left y coordinate of the target
-	 * 
+	 *
 	 * @return the group that was loaded from the target file
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public Optional<Target> addTarget(File target, final double x, final double y) {
@@ -118,13 +118,13 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 		if (newTarget.isPresent()) {
 			Target t = newTarget.get();
-			
+
 			t.setPosition(x, y);
-			
+
 			if (isPerspectiveInitialized()) {
 				arenaPane.resizeTargetToDefaultPerspective(t);
 			}
-			
+
 			targets.add(t);
 		}
 
@@ -138,9 +138,9 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	/**
 	 * Get the width of the arena in pixels.
-	 * 
+	 *
 	 * @return the arena's width in pixels
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public double getArenaWidth() {
@@ -149,9 +149,9 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	/**
 	 * Get the height of the arena in pixels.
-	 * 
+	 *
 	 * @return the arena's height in pixels
-	 * 
+	 *
 	 * @since 2.1
 	 */
 	public double getArenaHeight() {
@@ -162,27 +162,27 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	 * Get the coordinates of the origin for the display the arena is currently
 	 * located on. This is useful if you need to know what display the arena is
 	 * on.
-	 * 
+	 *
 	 * @return the origin coordinates for the JavaFX screen the arena is located
 	 *         on, relative to other displays.
-	 * 
+	 *
 	 * @since 3.8
 	 */
 	public Point2D getArenaScreenOrigin() {
 		return arenaPane.getArenaScreenOrigin();
 	}
-	
+
 	/**
 	 * This function corrects coordinates in the arena area for the DPI of the
 	 * arena screen and relative to the origin.  This is for creating mouse
-	 * events and other javafx functions that need true coordinates rather 
+	 * events and other javafx functions that need true coordinates rather
 	 * than scaled ones.
-	 * 
+	 *
 	 * @param point
 	 * 			The coordinates to be corrected
-	 * 
+	 *
 	 * @return Translated coordinates
-	 * 
+	 *
 	 * @since 3.8
 	 */
 	public Point2D translateToTrueArenaCoords(Point2D point)
@@ -190,7 +190,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 		final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
 
 		final Point2D origin = arenaPane.getArenaScreenOrigin();
-		
+
 		return new Point2D(origin.getX() + (point.getX() * dpiScaleFactor),
 				origin.getY() + (point.getY() * dpiScaleFactor));
 	}
@@ -204,7 +204,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	/**
 	 * Show a message on all webcam feeds, but optionally do not show the
 	 * message on the arena itself.
-	 * 
+	 *
 	 * @param message
 	 *            the message to show
 	 * @param showOnArena
@@ -221,7 +221,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	/**
 	 * Show a message on all webcam feeds and the arena, but customize the
 	 * location, font, and colors used to display the message.
-	 * 
+	 *
 	 * @param message
 	 *            the message to show
 	 * @param x
@@ -234,7 +234,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	 *            the color of the letters in the message
 	 * @param font
 	 *            the font to use to display the message
-	 * 
+	 *
 	 * @since 3.7
 	 */
 	public void showTextOnFeed(String message, int x, int y, Color backgroundColor, Color textColor, Font font) {
@@ -253,7 +253,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	 * Returns the current instance of this class. This method exists so that we
 	 * can call methods in this class when in an internal class (e.g. to
 	 * implement Callable) that doesn't have access to super.
-	 * 
+	 *
 	 * @return the current instance of this class
 	 */
 	public ProjectorTrainingExerciseBase getInstance() {
@@ -262,11 +262,11 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	/**
 	 * Set the projector arena's background image.
-	 * 
+	 *
 	 * @param background
 	 *            a file on the filesystem or a resource to set as the projector
 	 *            arena's background.
-	 * 
+	 *
 	 * @since 3.7
 	 */
 	public void setArenaBackground(LocatedImage background) {
@@ -276,11 +276,11 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	/**
 	 * Remove all targets on the arena and replace them with the course
 	 * specified in the file <code>courseFile</code>.
-	 * 
+	 *
 	 * @param courseFile
 	 *            a file specifying the course to use
 	 * @return a list of the targets loaded from <code>courseFile</code>
-	 * 
+	 *
 	 * @since 3.8
 	 */
 	public List<Target> setCourse(File courseFile) {
@@ -292,10 +292,10 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	/**
 	 * Determines whether or not ShootOFF has sufficient information to set a
 	 * target's distance to a real world distance.
-	 * 
+	 *
 	 * @return <code>true</code> if ShootOFF can set a target to a real world
 	 *         distance
-	 * 
+	 *
 	 * @since 3.8
 	 */
 	public boolean isPerspectiveInitialized() {
@@ -311,13 +311,13 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	 * required to measure distances in the real world. Look at the USPSA target
 	 * for an example of setting a default real world width, height, and
 	 * distance for a target.
-	 * 
+	 *
 	 * Distance and camera specification information is typically determined
 	 * during the auto-calibration process. However, a user will have to
 	 * manually enter at least the camera distance by manually setting a
 	 * target's distance if they did not auto-calibrate or if they
 	 * auto-calibrated without the perspective calibration pattern present.
-	 * 
+	 *
 	 * @param target
 	 *            the target to resize
 	 * @param currentRealWidth
@@ -367,5 +367,8 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 		targets.clear();
 
 		super.destroy();
+	}
+	public ProjectorArenaPane getProjArenaController(){
+		return arenaPane;
 	}
 }

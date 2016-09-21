@@ -447,7 +447,7 @@ public class Main extends Application {
 
 	@SuppressFBWarnings("DM_EXIT")
 	public static void forceClose(final int status) {
-		System.exit(status);
+		//System.exit(status);
 	}
 
 	private Optional<String> getVersionXML(final String versionAddress) {

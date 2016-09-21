@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -99,7 +99,7 @@ public class CanvasManager implements CameraView {
 	private final String cameraName;
 	private final ObservableList<ShotEntry> shotEntries;
 	private final ImageView background = new ImageView();
-	private final List<Shot> shots;
+	public final List<Shot> shots;
 	private final List<Target> targets = new ArrayList<Target>();
 
 	private ProgressIndicator progress;
@@ -143,11 +143,11 @@ public class CanvasManager implements CameraView {
 		canvasGroup.setOnMouseClicked((event) -> {
 			if (contextMenu.isPresent() && contextMenu.get().isShowing())
 				contextMenu.get().hide();
-			
+
 			if (config.inDebugMode() && event.getButton() == MouseButton.PRIMARY) {
 				// Click to shoot
 				final Color shotColor;
-				
+
 				if (event.isShiftDown()) {
 					shotColor = Color.RED;
 				} else if (event.isControlDown()) {
@@ -155,14 +155,14 @@ public class CanvasManager implements CameraView {
 				} else {
 					return;
 				}
-				
+
 				// Skip the camera manager for injected shots made from the
 				// arena tab otherwise they get scaled before the call to
 				// addArenaShot when they go through the arena camera feed's
 				// canvas manager
 				if (this instanceof MirroredCanvasManager) {
 					addShot(
-							new Shot(shotColor, event.getX(), event.getY(), cameraManager.getCurrentFrameTimestamp(), config.getMarkerRadius()), 
+							new Shot(shotColor, event.getX(), event.getY(), cameraManager.getCurrentFrameTimestamp(), config.getMarkerRadius()),
 							false);
 				} else {
 					cameraManager.injectShot(shotColor, event.getX(), event.getY(), false);
@@ -173,7 +173,7 @@ public class CanvasManager implements CameraView {
 			}
 		});
 	}
-	
+
 	@Override
 	public void close() {
 		diagnosticExecutorService.shutdownNow();
@@ -531,7 +531,7 @@ public class CanvasManager implements CameraView {
 	}
 
 	// For testing
-	protected List<Shot> getShots() {
+	public List<Shot> getShots() {
 		return shots;
 	}
 
@@ -545,7 +545,7 @@ public class CanvasManager implements CameraView {
 			} else {
 				notifyShot(shot);
 			}
-			
+
 			if (config.useRedLaserSound() && Color.RED.equals(shot.getColor())) {
 				TrainingExerciseBase.playSound(config.getRedLaserSound());
 			} else if (config.useGreenLaserSound() && Color.GREEN.equals(shot.getColor())) {
@@ -558,9 +558,9 @@ public class CanvasManager implements CameraView {
 		// table is in use
 		if (shotEntries != null) {
 			Optional<Shot> lastShot = Optional.empty();
-			
+
 			if (shotEntries.size() > 0) lastShot = Optional.of(shotEntries.get(shotEntries.size() - 1).getShot());
-	
+
 			final ShotEntry shotEntry;
 			if (hadMalfunction || hadReload) {
 				shotEntry = new ShotEntry(shot, lastShot, config.getShotTimerRowColor(), hadMalfunction, hadReload);
@@ -569,7 +569,7 @@ public class CanvasManager implements CameraView {
 			} else {
 				shotEntry = new ShotEntry(shot, lastShot, config.getShotTimerRowColor(), false, false);
 			}
-	
+
 			try {
 				shotEntries.add(shotEntry);
 			} catch (NullPointerException npe) {
@@ -633,7 +633,7 @@ public class CanvasManager implements CameraView {
 			canvasGroup.getChildren().add(shot.getMarker());
 			shot.getMarker().setVisible(showShots);
 		};
-		
+
 		if (Platform.isFxApplicationThread()) {
 			drawShotAction.run();
 		} else {
@@ -737,7 +737,7 @@ public class CanvasManager implements CameraView {
 
 	protected Optional<TargetComponents> loadTarget(File targetFile, boolean playAnimations) {
 		Optional<TargetComponents> targetComponents;
-		
+
 		if ('@' == targetFile.toString().charAt(0)) {
 			if (!config.getPlugin().isPresent()) {
 				throw new AssertionError("Loaded target from training exercise resources, but a plugin does not "
@@ -761,7 +761,7 @@ public class CanvasManager implements CameraView {
 
 		return targetComponents;
 	}
-	
+
 	public Optional<Target> addTarget(File targetFile, boolean playAnimations) {
 		Optional<TargetComponents> targetComponents = loadTarget(targetFile, playAnimations);
 
@@ -786,13 +786,13 @@ public class CanvasManager implements CameraView {
 
 	public Target addTarget(File targetFile, Group targetGroup, Map<String, String> targetTags, boolean userDeletable) {
 		final TargetView newTarget;
-		
+
 		if (this instanceof MirroredCanvasManager) {
 			newTarget = new MirroredTarget(targetFile, targetGroup, targetTags, config, this, userDeletable);
 		} else {
 			newTarget = new TargetView(targetFile, targetGroup, targetTags, config, this, userDeletable);
 		}
-		
+
 		return addTarget(newTarget);
 	}
 

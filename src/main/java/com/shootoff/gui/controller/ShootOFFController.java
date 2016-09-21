@@ -343,8 +343,9 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 			};
 		});
 
-		shotTimerTable.getColumns().add(timeCol);
-		shotTimerTable.getColumns().add(splitCol);
+		//shotTimerTable.getColumns().add(timeCol);
+		//shotTimerTable.getColumns().add(splitCol);
+		shotTimerTable.setStyle("-fx-font-size: 30");
 		shotTimerTable.getColumns().add(laserCol);
 		shotTimerTable.setItems(shotEntries);
 		shotTimerTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

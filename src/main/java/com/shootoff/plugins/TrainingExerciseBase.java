@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -76,11 +76,11 @@ import javafx.util.Callback;
  * exercises should extend it unless they are meant to be used solely on the
  * projector arena. Projector arena exercises should extend
  * {@link com.shootoff.plugins.ProjectorTrainingExerciseBase}.
- * 
+ *
  * @author phrack
  */
 public class TrainingExerciseBase {
-	private static final Logger logger = LoggerFactory.getLogger(TrainingExerciseBase.class);
+	protected static final Logger logger = LoggerFactory.getLogger(TrainingExerciseBase.class);
 
 	private static boolean isSilenced = false;
 
@@ -94,7 +94,7 @@ public class TrainingExerciseBase {
 	private boolean changedRowColor = false;
 	private boolean haveDelayControls = false;
 	private boolean haveParControls = false;
-	
+
 	private final Map<CameraView, Label> exerciseLabels = new HashMap<>();
 	private final List<Pane> exercisePanes = new ArrayList<>();
 	private final Map<String, TableColumn<ShotEntry, String>> exerciseColumns = new HashMap<>();
@@ -112,7 +112,7 @@ public class TrainingExerciseBase {
 		init(config, camerasSupervisor, controller.getButtonsPane(), controller.getShotEntryTable());
 		this.cameraViews = (CameraViews) controller;
 		this.trainingExerciseContainer = controller.getTrainingExerciseContainer();
-		
+
 		if (cameraViews.getArenaView().isPresent()) {
 			final Label exerciseLabel = new Label();
 			exerciseLabel.setTextFill(Color.WHITE);
@@ -143,7 +143,7 @@ public class TrainingExerciseBase {
 	 * Allows sounds to be silenced or on. If silenced, instead of playing a
 	 * sound the file name will be printed to stdout. This exists so that
 	 * components can be easily tested even if they are reliant on sounds.
-	 * 
+	 *
 	 * @param isSilenced
 	 *            set to <tt>true</tt> if sound file names should instead be
 	 *            printed to stdout, <tt>false</tt> for normal operation.
@@ -156,33 +156,33 @@ public class TrainingExerciseBase {
 	 * Returns the current instance of this class. This method exists so that we
 	 * can call methods in this class when in an internal class (e.g. to
 	 * implement Callable) that doesn't have access to super.
-	 * 
+	 *
 	 * @return the current instance of this class
 	 */
 	public TrainingExerciseBase getInstance() {
 		return this;
 	}
-	
+
 	private static class DelayPane extends GridPane {
 		public DelayPane(DelayedStartListener listener) {
 			this.getColumnConstraints().add(new ColumnConstraints(100));
 			this.setVgap(5);
-			
+
 			final Label instructionsLabel = new Label("Set interval within which a beep will sound\n"
 					+ "to signal the start of a round.\nDefault: A round starts after a random wait\n"
 					+ "between 4 and 8 seconds in length.\n");
 			instructionsLabel.setPrefSize(300, 77);
-			
+
 			this.add(instructionsLabel, 0, 0, 2, 3);
 			this.addRow(3, new Label("Min (s)"));
 			this.addRow(4, new Label("Max (s)"));
-			
+
 			final TextField minTextField = new TextField("4");
 			this.add(minTextField, 1, 3);
-			
+
 			final TextField maxTextField = new TextField("8");
 			this.add(maxTextField, 1, 4);
-			
+
 			minTextField.textProperty().addListener((observable, oldValue, newValue) -> {
 				if (!newValue.matches("\\d*")) {
 					minTextField.setText(oldValue);
@@ -209,18 +209,18 @@ public class TrainingExerciseBase {
 	 * Shows controls that let the user set the interval for a random
 	 * start delay in seconds. Notify interval points to a function that gets
 	 * the min and max values for the interval as parameters.
-	 * 
+	 *
 	 * @param listener
 	 *            the object to notify when the user closes this window with a
 	 *            set value
-	 * 
+	 *
 	 * @since 1.4
 	 */
 	public void getDelayedStartInterval(final DelayedStartListener listener) {
 		if (listener == null) throw new IllegalArgumentException("Delayed start listener must be non-null");
-		
+
 		if (haveDelayControls) return;
-		
+
 		final DelayPane delayPane = new DelayPane(listener);
 
 		trainingExerciseContainer.getChildren().add(delayPane);
@@ -230,17 +230,17 @@ public class TrainingExerciseBase {
 
 	/**
 	 * A copy of getDelayedStartInterval() plus setting the PAR time.
-	 * 
+	 *
 	 * @param listener
 	 *            the object to notify when a par time is set.
 	 */
 	public void getParInterval(final ParListener listener) {
 		if (listener == null) throw new IllegalArgumentException("Par listener must be non-null");
-		
+
 		if (haveParControls) return;
-		
+
 		final DelayPane parPane = new DelayPane(listener);
-		
+
 		final TextField parTextField = new TextField("2.0");
 		parPane.addRow(5, new Label("PAR Time (s)"));
 		parPane.add(parTextField, 1, 5);
@@ -256,16 +256,16 @@ public class TrainingExerciseBase {
 				}
 			}
 		});
-		
+
 		trainingExerciseContainer.getChildren().add(parPane);
 		exercisePanes.add(parPane);
 		haveParControls = true;
 	}
-	
+
 	/**
 	 * Add a pane with exercise-specific controls (e.g. to collect user
 	 * settings) to the bottom of the main ShootOFF window.
-	 * 
+	 *
 	 * @param pane
 	 *            a pane with exercise-specific controls to add to the main
 	 *            ShootOFF window
@@ -274,19 +274,19 @@ public class TrainingExerciseBase {
 		trainingExerciseContainer.getChildren().add(pane);
 		exercisePanes.add(pane);
 	}
-	
+
 	/**
 	 * Adds a button to the right of the reset button on the main ShootOFF
 	 * window with caption <tt>text</tt> and action handler
 	 * <tt>eventHandler</tt>.
-	 * 
+	 *
 	 * @param text
 	 *            the caption to display on the new button
-	 * 
+	 *
 	 * @param eventHandler
 	 *            the event handler that performs actions when this new button
 	 *            is clicked
-	 * 
+	 *
 	 * @return the new button that was added to the main ShootOFF window
 	 */
 	public Button addShootOFFButton(final String text, final EventHandler<ActionEvent> eventHandler) {
@@ -312,14 +312,14 @@ public class TrainingExerciseBase {
 	/**
 	 * Adds a column to the shot timer table. The <tt>name</tt> is used to
 	 * reference this column for the purposes of setting text and cleaning up.
-	 * 
+	 *
 	 * @param name
 	 *            both the text that will appear for name of the column and the
 	 *            name used to reference this column whenever it needs to be
 	 *            looked up
 	 * @param width
 	 *            the width of the new column
-	 * 
+	 *
 	 * @since 1.3
 	 */
 	public void addShotTimerColumn(String name, int width) {
@@ -338,26 +338,26 @@ public class TrainingExerciseBase {
 	/**
 	 * Inserts text into the named column for the last entry in the shot timer
 	 * table.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the column to insert the text into
 	 * @param value
 	 *            the text that should be inserted
-	 * 
+	 *
 	 * @since 1.3
 	 */
 	public void setShotTimerColumnText(final String name, final String value) {
 		if (shotTimerTable != null && shotTimerTable.getItems() != null) {
 			Runnable shotTimerColumnTextSetter = () -> {
 				if (shotTimerTable.getItems().size() == 0) {
-					logger.error("Trying to set shot timer column text on an empty shot timer list", 
+					logger.error("Trying to set shot timer column text on an empty shot timer list",
 							new AssertionError("Shot timer table is empty"));
 					return;
 				}
-				
+
 				shotTimerTable.getItems().get(shotTimerTable.getItems().size() - 1).setExerciseValue(name, value);
 			};
-			
+
 			if (Platform.isFxApplicationThread()) {
 				shotTimerColumnTextSetter.run();
 			} else {
@@ -369,7 +369,7 @@ public class TrainingExerciseBase {
 	/**
 	 * Set the background color for rows for shots added to the shot timer after
 	 * this method is called.
-	 * 
+	 *
 	 * @param c
 	 *            the color to use in the style string for the row. Set to null
 	 *            to return the row color to the default color
@@ -381,10 +381,10 @@ public class TrainingExerciseBase {
 
 	/**
 	 * Shows a message on every single webcam feed.
-	 * 
+	 *
 	 * @param message
 	 *            the message to show on every webcam feed
-	 * 
+	 *
 	 * @since 1.0
 	 */
 	public void showTextOnFeed(String message) {
@@ -424,7 +424,7 @@ public class TrainingExerciseBase {
 
 	/**
 	 * Get a list of all of the targets on every canvas manager
-	 * 
+	 *
 	 * @return a list of all targets that ShootOFF will detect hits (only lists
 	 *         targets known at the time this method was called)
 	 */
@@ -434,10 +434,10 @@ public class TrainingExerciseBase {
 
 	/**
 	 * Sets whether or not shot detection is paused.
-	 * 
+	 *
 	 * @param isPaused
 	 *            <tt>true</tt> to temporarily stop detecting shots
-	 * 
+	 *
 	 * @since 1.4
 	 */
 	public void pauseShotDetection(final boolean isPaused) {
@@ -446,10 +446,10 @@ public class TrainingExerciseBase {
 
 	/**
 	 * Plays an audio file asynchronously.
-	 * 
+	 *
 	 * @param soundFilePath
 	 *            the audio file to play (e.g. "sounds/metal_clang.wav")
-	 * 
+	 *
 	 * @since 1.1
 	 */
 	public static void playSound(final String soundFilePath) {
@@ -609,7 +609,7 @@ public class TrainingExerciseBase {
 			trainingExerciseContainer.getChildren().remove(itExercisePanes.next());
 			itExercisePanes.remove();
 		}
-		
+
 		final Iterator<Button> itExerciseButtons = exerciseButtons.iterator();
 
 		while (itExerciseButtons.hasNext()) {

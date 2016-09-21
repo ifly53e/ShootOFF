@@ -115,6 +115,7 @@ public class ExerciseSlide extends Slide implements PluginListener, ItemSelectio
 		noneButton = addNoneButton();
 		
 		final TitledPane universalPane = new TitledPane("Universal Exercises", exerciseItemPane);
+		universalPane.setExpanded(false);
 		projectorPane = new TitledPane("Projector Exercises", projectorExerciseItemPane);
 		projectorPane.setDisable(true);
 		projectorPane.setExpanded(false);
@@ -184,13 +185,24 @@ public class ExerciseSlide extends Slide implements PluginListener, ItemSelectio
 		exerciseItemPane.removeButton(exercise);
 	}
 
+//	public void toggleProjectorExercises(boolean isDisabled) {
+//		if (isDisabled) {
+//			noneButton.fire();
+//		}
+//		
+//		projectorPane.setDisable(isDisabled);
+//		projectorPane.setExpanded(!isDisabled);
+//	}
 	public void toggleProjectorExercises(boolean isDisabled) {
 		if (isDisabled) {
 			noneButton.fire();
+			projectorPane.setExpanded(false);
+		}
+		else{
+			projectorPane.setExpanded(true);
 		}
 		
 		projectorPane.setDisable(isDisabled);
-		projectorPane.setExpanded(!isDisabled);
 	}
 	
 	private void startRecordingSession() {

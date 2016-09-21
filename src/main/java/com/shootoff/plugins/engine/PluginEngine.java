@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import com.shootoff.plugins.BouncingTargets;
 import com.shootoff.plugins.DuelingTree;
 import com.shootoff.plugins.ExerciseMetadata;
+import com.shootoff.plugins.FrontSight_v3;
 import com.shootoff.plugins.ISSFStandardPistol;
 import com.shootoff.plugins.ParForScore;
 import com.shootoff.plugins.ParRandomShot;
@@ -105,6 +106,7 @@ public class PluginEngine implements Runnable {
 		pluginListener.registerProjectorExercise(new DuelingTree());
 		pluginListener.registerProjectorExercise(new ShootDontShoot());
 		pluginListener.registerProjectorExercise(new SteelChallenge());
+		pluginListener.registerProjectorExercise(new FrontSight_v3());
 	}
 
 	private boolean registerPlugin(final Path jarPath) {

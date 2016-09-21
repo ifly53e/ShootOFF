@@ -75,8 +75,28 @@ public class SpriteAnimation extends Transition {
 		}
 	}
 
+	//	public void reverse() {
+	//	isReversed = !isReversed;
+	//	setRate(getRate() * -1);
+	//}
 	public void reverse() {
-		isReversed = !isReversed;
-		setRate(getRate() * -1);
+	
+		if(getRate()>0)
+		{
+			setRate(getRate() * -1);
+			isReversed = !isReversed;
+			play();
+			
+		}else{
+			setRate(Math.abs(getRate()));
+			isReversed = !isReversed;
+			play();
+		}
+	
+	}
+	public void playAnimation() {
+		//isReversed = !isReversed;
+		//setRate(getRate() * -1);
+		play();
 	}
 }
