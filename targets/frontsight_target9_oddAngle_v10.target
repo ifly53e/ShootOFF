@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<target>
+	<image x="-638.000000" y="-263.000000" file="targets\oddAngle_v333.gif">
+		<tag name="command" value="animate" />
+	</image>
+	<rectangle x="-643.000000" y="-266.000000" width="579.000000" height="865.000000" fill="orange">
+		<tag name="subtarget" value="target9_white_Target" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="0" />
+	</rectangle>
+
+	<polygon fill="black">
+		<point x="-373.000000" y="-129.000000" />
+		<point x="-373.000000" y="-129.000000" />
+		<point x="-397.000000" y="-140.000000" />
+		<point x="-419.000000" y="-145.000000" />
+		<point x="-439.000000" y="-141.000000" />
+		<point x="-456.000000" y="-131.000000" />
+		<point x="-466.000000" y="-120.000000" />
+		<point x="-478.000000" y="-98.000000" />
+		<point x="-481.000000" y="-79.000000" />
+		<point x="-480.000000" y="-58.000000" />
+		<point x="-472.000000" y="-43.000000" />
+		<point x="-466.000000" y="-30.000000" />
+		<point x="-456.000000" y="-11.000000" />
+		<point x="-447.000000" y="9.000000" />
+		<point x="-435.000000" y="34.000000" />
+		<point x="-414.000000" y="50.000000" />
+		<point x="-395.000000" y="61.000000" />
+		<point x="-383.000000" y="64.000000" />
+		<point x="-374.000000" y="61.000000" />
+		<tag name="subtarget" value="target9_leftHead" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-315.000000" y="-130.000000" />
+		<point x="-315.000000" y="-130.000000" />
+		<point x="-298.000000" y="-138.000000" />
+		<point x="-276.000000" y="-142.000000" />
+		<point x="-254.000000" y="-139.000000" />
+		<point x="-234.000000" y="-130.000000" />
+		<point x="-223.000000" y="-112.000000" />
+		<point x="-211.000000" y="-90.000000" />
+		<point x="-209.000000" y="-64.000000" />
+		<point x="-218.000000" y="-36.000000" />
+		<point x="-228.000000" y="-16.000000" />
+		<point x="-237.000000" y="-4.000000" />
+		<point x="-248.000000" y="19.000000" />
+		<point x="-266.000000" y="42.000000" />
+		<point x="-281.000000" y="56.000000" />
+		<point x="-304.000000" y="66.000000" />
+		<point x="-319.000000" y="62.000000" />
+		<tag name="subtarget" value="target9_rightHead" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</polygon>
+		<polygon fill="black">
+		<point x="-373.000000" y="-93.000000" />
+		<point x="-373.000000" y="-93.000000" />
+		<point x="-463.000000" y="-58.000000" />
+		<point x="-441.000000" y="5.000000" />
+		<point x="-374.000000" y="-18.000000" />
+		<tag name="subtarget" value="target9_leftOCC" />
+				<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-316.000000" y="-91.000000" />
+		<point x="-316.000000" y="-91.000000" />
+		<point x="-228.000000" y="-56.000000" />
+		<point x="-252.000000" y="10.000000" />
+		<point x="-317.000000" y="-14.000000" />
+		<tag name="subtarget" value="target9_rightOCC" />
+				<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-319.000000" y="61.000000" />
+		<point x="-319.000000" y="61.000000" />
+		<point x="-302.000000" y="66.000000" />
+		<point x="-283.000000" y="59.000000" />
+		<point x="-292.000000" y="95.000000" />
+		<point x="-210.000000" y="174.000000" />
+		<point x="-203.000000" y="186.000000" />
+		<point x="-203.000000" y="196.000000" />
+		<point x="-325.000000" y="497.000000" />
+		<tag name="subtarget" value="target9_rightBody" />
+				<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-376.000000" y="62.000000" />
+		<point x="-376.000000" y="62.000000" />
+		<point x="-390.000000" y="65.000000" />
+		<point x="-413.000000" y="53.000000" />
+		<point x="-405.000000" y="91.000000" />
+		<point x="-450.000000" y="134.000000" />
+		<point x="-496.000000" y="176.000000" />
+		<point x="-496.000000" y="191.000000" />
+		<point x="-382.000000" y="500.000000" />
+		<tag name="subtarget" value="target9_leftBody" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</polygon>
+	
+	<polygon fill="black">
+		<point x="-321.000000" y="133.000000" />
+		<point x="-321.000000" y="133.000000" />
+		<point x="-296.000000" y="155.000000" />
+		<point x="-283.000000" y="179.000000" />
+		<point x="-276.000000" y="214.000000" />
+		<point x="-278.000000" y="260.000000" />
+		<point x="-287.000000" y="310.000000" />
+		<point x="-303.000000" y="352.000000" />
+		<point x="-307.000000" y="361.000000" />
+		<point x="-323.000000" y="356.000000" />
+		<tag name="subtarget" value="target9_rightTC" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-377.000000" y="132.000000" />
+		<point x="-377.000000" y="132.000000" />
+		<point x="-395.000000" y="148.000000" />
+		<point x="-413.000000" y="175.000000" />
+		<point x="-424.000000" y="207.000000" />
+		<point x="-426.000000" y="241.000000" />
+		<point x="-423.000000" y="273.000000" />
+		<point x="-416.000000" y="306.000000" />
+		<point x="-407.000000" y="335.000000" />
+		<point x="-401.000000" y="354.000000" />
+		<point x="-399.000000" y="361.000000" />
+		<point x="-380.000000" y="351.000000" />
+		<tag name="subtarget" value="target9_leftTC" />
+				<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-373.000000" y="-169.000000" />
+		<point x="-373.000000" y="-169.000000" />
+		<point x="-317.000000" y="-168.000000" />
+		<point x="-326.000000" y="507.000000" />
+		<point x="-383.000000" y="504.000000" />
+		<tag name="subtarget" value="target9_wall" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.00001" />
+		<tag name="command" value="play_sound(sounds/Price_Is_Right_loser_clip.wav)" />
+		<tag name="points" value="0" />
+	</polygon>
+</target>

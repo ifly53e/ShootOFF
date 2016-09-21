@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<course>
+	<target file="targets\frontsight_50yardLine.target" x="-1960.065138" y="-868.796431" width="4309.625488" height="2171.680176" />
+	<target file="targets\frontsight_middle_V8a.target" x="1973.249730" y="516.062319" width="725.625488" height="1083.125366" />
+	<target file="targets\frontsight_middle_V8a.target" x="1394.312500" y="564.562500" width="435.375305" height="649.875061" />
+	<target file="targets\frontsight_middle_V8a.target" x="1010.562500" y="535.312496" width="310.982391" height="464.196625" />
+	<target file="targets\frontsight_middle_V8a.target" x="734.562500" y="525.312504" width="217.687683" height="324.937622" />
+	<target file="targets\frontsight_middle_V8a.target" x="534.062500" y="572.312500" width="145.125122" height="216.625000" />
+	<target file="targets\frontsight_middle_V8a.target" x="404.562500" y="563.062500" width="87.075027" height="129.975098" />
+	<target file="targets\frontsight_middle_V8a.target" x="398.312500" y="442.562500" width="43.537598" height="64.987427" />
+	<resolution width="2000.000000" height="1500.000000" />
+</course>

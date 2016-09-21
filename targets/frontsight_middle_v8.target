@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<target>
+	<image x="-638.000000" y="-263.000000" file="targets\schoolDrill_v333.gif">
+		<tag name="command" value="animate" />
+	</image>
+	<rectangle x="-641.500000" y="-264.500000" width="579.000000" height="865.000000" fill="orange">
+		<tag name="subtarget" value="middleTarget_white_Target" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="0" />
+	</rectangle>
+	<rectangle x="-395.500000" y="51.500000" width="95.000000" height="55.000000" fill="orange">
+		<tag name="subtarget" value="middleTarget_theNeck" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</rectangle>
+	<ellipse centerX="-349.000000" centerY="-36.000000" radiusX="69.000000" radiusY="109.000000" fill="black">
+		<tag name="subtarget" value="middleTarget_theHead" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</ellipse>
+	<rectangle x="-403.000000" y="-78.000000" width="108.000000" height="74.000000" fill="black">
+		<tag name="subtarget" value="middleTarget_OCC" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</rectangle>
+	<rectangle x="-527.500000" y="128.500000" width="357.000000" height="353.000000" fill="black">
+		<tag name="visible" value="true" />
+		<tag name="ignoreHit" value="false" />
+		<tag name="subtarget" value="middleTarget_theBody" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</rectangle>
+	<ellipse centerX="-351.500000" centerY="252.500000" radiusX="128.000000" radiusY="124.000000" fill="black">
+		<tag name="subtarget" value="middleTarget_TCavUpper" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</ellipse>
+	<polygon fill="black">
+		<point x="-517.789001" y="129.086533" />
+		<point x="-176.210983" y="129.086533" />
+		<point x="-347.000000" y="73.153648" />
+		<tag name="subtarget" value="middleTarget_clavical" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="2" />
+	</polygon>
+	<rectangle x="-491.500000" y="300.500000" width="280.000000" height="41.000000" fill="black">
+		<tag name="subtarget" value="middleTarget_TCLower" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</rectangle>
+	<polygon fill="black">
+		<point x="-490.033661" y="302.363464" />
+		<point x="-463.966339" y="302.363464" />
+		<point x="-477.000000" y="230.176941" />
+		<tag name="subtarget" value="middleTarget_TCLeft" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<polygon fill="black">
+		<point x="-249.842743" y="309.093658" />
+		<point x="-208.157257" y="309.093658" />
+		<point x="-229.000000" y="215.666672" />
+		<tag name="subtarget" value="middleTarget_TCRight" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/steel_sound_1.wav)" />
+		<tag name="points" value="5" />
+	</polygon>
+	<rectangle x="-449.500000" y="340.500000" width="191.000000" height="37.000000" fill="black">
+		<tag name="subtarget" value="middleTarget_coverCircle" />
+		<tag name="visible" value="true" />
+		<tag name="opacity" value="0.0001" />
+		<tag name="command" value="play_sound(sounds/sks.wav)" />
+		<tag name="points" value="2" />
+	</rectangle>
+</target>
