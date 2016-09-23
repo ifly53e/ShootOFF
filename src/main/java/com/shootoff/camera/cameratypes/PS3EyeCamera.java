@@ -169,7 +169,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 				logger.error("Error setting exposure on PS3Eye during initialization,"
 						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
 			}
-			
+
 			CameraFactory.registerCamera(new PS3EyeCamera());
 			logger.trace("PS3Eye adjusted and registered");
 		}
@@ -284,7 +284,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 			gain.setDisable(true);
 			exposure.setDisable(true);
 		}
-		
+
 		autoGain.setSelected(isAutoGainSet);
 
 		GridPane.setConstraints(autoGain, 1, 4);
@@ -448,7 +448,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 				});
 			}
 		}
-		
+
 		if (cameraEventListener.isPresent())
 			cameraEventListener.get().cameraClosed();
 	}
