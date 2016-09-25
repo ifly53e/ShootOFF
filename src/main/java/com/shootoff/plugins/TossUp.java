@@ -154,7 +154,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			addTargets(shootTargets,"targets/TossUP_Turkey_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pig_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Ram_Silhouette.target",1);
-			addTargets(shootTargets,"targets/TossUP_Plate_Silhouette.target",1);
+			addTargets(shootTargets,"targets/TossUP_Plate_Rack_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pepper_Popper.target",1);
 		}
 		if(shootCount == 5){ //35 points
@@ -162,25 +162,25 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			addTargets(shootTargets,"targets/TossUP_Turkey_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pig_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Ram_Silhouette.target",1);
-			addTargets(shootTargets,"targets/TossUP_Plate_Silhouette.target",1);
+			addTargets(shootTargets,"targets/TossUP_Plate_Rack_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pepper_Popper.target",1);
 		}
 		if(shootCount == 4){ //26
 			possiblePoints = 26;
 			addTargets(shootTargets,"targets/TossUP_Pig_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Ram_Silhouette.target",1);
-			addTargets(shootTargets,"targets/TossUP_Plate_Silhouette.target",1);
+			addTargets(shootTargets,"targets/TossUP_Plate_Rack_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pepper_Popper.target",1);
 		}
 		if(shootCount == 3){//18
 			possiblePoints = 18;
 			addTargets(shootTargets,"targets/TossUP_Ram_Silhouette.target",1);
-			addTargets(shootTargets,"targets/TossUP_Plate_Silhouette.target",1);
+			addTargets(shootTargets,"targets/TossUP_Plate_Rack_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pepper_Popper.target",1);
 		}
 		if(shootCount == 2){//11
 			possiblePoints = 11;
-			addTargets(shootTargets,"targets/TossUP_Plate_Silhouette.target",1);
+			addTargets(shootTargets,"targets/TossUP_Plate_Rack_Silhouette.target",1);
 			addTargets(shootTargets,"targets/TossUP_Pepper_Popper.target",1);
 		}
 		if(shootCount == 1){//5
@@ -668,7 +668,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 					logger.debug("name tag is: " + hit.get().getHitRegion().getTag("name"));
 					switch(hit.get().getHitRegion().getTag("name")){
 
-						case "TossUP_Plate_Silhouette.target":
+						case "TossUP_Plate_Rack_Silhouette.target":
 							myCtt = cttMap.get(hit.get().getHitRegion().getTag("name"));
 							myCtt.setTargetWasHit(true);
 						break;
@@ -712,7 +712,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 //					TossUpTarget myCtt;
 //					switch(hit.get().getHitRegion().getTag("subtarget")){
 //
-//						case "TossUP_Plate_Silhouette.target":
+//						case "TossUP_Plate_Rack_Silhouette.target":
 //							myCtt = cttMap.get(hit.get().getHitRegion().getTag("subtarget"));
 //							myCtt.setTargetWasHit(true);
 //						break;
