@@ -455,29 +455,25 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		if (config.getWebcams().isEmpty())
 			defaultCam = CameraFactory.getDefault();
 		
-		for (Iterator<Entry<Tab, CameraManager>> it = CameraManagerTabs.entrySet().iterator(); it.hasNext();)
-		{
-			Entry<Tab, CameraManager> next = it.next();
-			if (config.getWebcams().isEmpty())
-			{
-				if (!defaultCam.isPresent() || next.getValue().getCamera() != defaultCam.get())
-				{
+		for (Iterator<Entry<Tab, CameraManager>> it = cameraManagerTabs.entrySet().iterator(); it.hasNext();) {
+			final Entry<Tab, CameraManager> next = it.next();
+			if (config.getWebcams().isEmpty()) {
+				if (!defaultCam.isPresent() || next.getValue().getCamera() != defaultCam.get()) {
 					cameraTabPane.getTabs().remove(next.getKey());
 					camerasSupervisor.clearManager(next.getValue());
 					it.remove();
 				}
-			}
-			else
-			{
+			} else {
 				boolean remove = true;
-				for (String webcamName : config.getWebcams().keySet())
-				{
+				for (String webcamName : config.getWebcams().keySet()) {
 					final Camera webcam = config.getWebcams().get(webcamName);
-					if (next.getValue().getCamera() == webcam && webcam.isOpen())
+					if (next.getValue().getCamera() == webcam && webcam.isOpen()) {
+						// Webcam name may have changed, so update it
+						next.getKey().setText(webcamName);
 						remove = false;
+					}
 				}
-				if (remove)
-				{
+				if (remove) {
 					cameraTabPane.getTabs().remove(next.getKey());
 					camerasSupervisor.clearManager(next.getValue());
 					it.remove();
@@ -503,9 +499,8 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 
 			for (String webcamName : config.getWebcams().keySet()) {
 				final Camera webcam = config.getWebcams().get(webcamName);
-				
-				if (camerasSupervisor.getCameraManager(webcam) != null)
-					continue;
+
+				if (camerasSupervisor.getCameraManager(webcam) != null) continue;
 
 				if (!addCameraTab(webcamName, webcam)) {
 					failureCount++;
@@ -515,7 +510,7 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		}
 	}
 
-	private Map<Tab, CameraManager> CameraManagerTabs = new HashMap<>();
+	private final Map<Tab, CameraManager> cameraManagerTabs = new HashMap<>();
 	private boolean addCameraTab(String webcamName, Camera cameraInterface) {
 		if (cameraInterface.isLocked() && !cameraInterface.isOpen()) {
 			return false;
@@ -529,7 +524,7 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		CanvasManager canvasManager = new CanvasManager(cameraCanvasGroup, config, this, webcamName, shotEntries);
 		CameraManager cameraManager = camerasSupervisor.addCameraManager(cameraInterface, this, canvasManager);
 
-		CameraManagerTabs.put(cameraTab, cameraManager);
+		cameraManagerTabs.put(cameraTab, cameraManager);
 		
 		if (config.getRecordingCameras().contains(cameraInterface)) {
 			config.registerRecordingCameraManager(cameraManager);
@@ -937,8 +932,17 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 
 			config.setExercise(newExercise);
 
-			((TrainingExerciseBase) newExercise).init(config, camerasSupervisor, this);
-			newExercise.init();
+			
+			final Runnable initExercise = () -> {
+				((TrainingExerciseBase) newExercise).init(config, camerasSupervisor, this);
+				newExercise.init();
+			};
+			
+			if (Platform.isFxApplicationThread()) {
+				initExercise.run();
+			} else {
+				Platform.runLater(initExercise);
+			}
 		} catch (ReflectiveOperationException e) {
 			ExerciseMetadata metadata = exercise.getInfo();
 			logger.error("Failed to start exercise " + metadata.getName() + " " + metadata.getVersion(), e);
@@ -961,8 +965,17 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 
 			config.setExercise(newExercise);
 
-			((ProjectorTrainingExerciseBase) newExercise).init(config, camerasSupervisor, this, projectorSlide.getArenaPane());
-			newExercise.init();
+			final Runnable initExercise = () -> {
+				((ProjectorTrainingExerciseBase) newExercise).init(config, camerasSupervisor, this, projectorSlide.getArenaPane());
+				newExercise.init();
+			};
+			
+			if (Platform.isFxApplicationThread()) {
+				initExercise.run();
+			} else {
+				Platform.runLater(initExercise);
+			}
+
 		} catch (ReflectiveOperationException e) {
 			ExerciseMetadata metadata = exercise.getInfo();
 			logger.error("Failed to start projector exercise " + metadata.getName() + " " + metadata.getVersion(), e);

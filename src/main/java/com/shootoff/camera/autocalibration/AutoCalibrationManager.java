@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import com.shootoff.camera.CameraCalibrationListener;
 import com.shootoff.camera.cameratypes.Camera;
+import com.shootoff.config.Configuration;
 
 public class AutoCalibrationManager {
 	private static final Logger logger = LoggerFactory.getLogger(AutoCalibrationManager.class);
@@ -429,7 +430,7 @@ public class AutoCalibrationManager {
 
 		@Override
 		public boolean enabled() {
-			return camera.supportsExposureAdjustment();
+			return Configuration.getConfig().autoAdjustExposure() && camera.supportsExposureAdjustment();
 		}
 
 		@Override
@@ -449,7 +450,7 @@ public class AutoCalibrationManager {
 			if (origMean == 0)
 				origMean = mean.val[0];
 			
-			logger.warn("{} {}", mean.val[0], TARGET_THRESH);
+			logger.trace("{} {}", mean.val[0], TARGET_THRESH);
 			
 			if (mean.val[0] > TARGET_THRESH)
 			{
@@ -473,9 +474,14 @@ public class AutoCalibrationManager {
 			
 			if (completed)
 			{
-				if (mean.val[0] > origMean || mean.val[0] < .8 * TARGET_THRESH)
+				if (mean.val[0] > origMean || mean.val[0] < .6 * TARGET_THRESH)
 				{
 					camera.resetExposure();
+					logger.info("Failed to adjust exposure, mean originally {} lowest {}", origMean, mean.val[0]);
+				}
+				else
+				{
+					logger.info("Exposure lowered to {} mean from {}", mean.val[0], origMean);
 				}
 			}
 			

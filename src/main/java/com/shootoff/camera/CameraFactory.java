@@ -92,16 +92,22 @@ public final class CameraFactory {
 	}
 
 	public static Optional<Camera> getDefault() {
-		final Camera defaultCam;
+		Camera defaultCam;
 
 		if (isMac) {
-			if (defaultWebcam == null) return Optional.empty();
-
-			defaultCam = new SarxosCaptureCamera(defaultWebcam.getName());
+			if (defaultWebcam == null) 
+				defaultCam = null;
+			else
+				defaultCam = new SarxosCaptureCamera(defaultWebcam.getName());
 		} else {
 			final Webcam cam = Webcam.getDefault();
 
 			defaultCam = cam == null ? null : new SarxosCaptureCamera(cam.getName());
+		}
+		
+		if (defaultCam == null && !registeredCameras.isEmpty())
+		{
+			defaultCam = registeredCameras.get(0);
 		}
 
 		return Optional.ofNullable(defaultCam);

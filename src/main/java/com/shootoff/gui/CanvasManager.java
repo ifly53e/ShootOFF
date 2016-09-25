@@ -231,7 +231,7 @@ public class CanvasManager implements CameraView {
 
 		Platform.runLater(() -> diagnosticsVBox.getChildren().add(diagnosticLabel));
 
-		if (!config.isChimeMuted(message) && !diagnosticExecutorService.isShutdown()) {
+		if (chimeDelay > 0 && !config.isChimeMuted(message) && !diagnosticExecutorService.isShutdown()) {
 			@SuppressWarnings("unchecked")
 			ScheduledFuture<Void> chimeFuture = (ScheduledFuture<Void>) diagnosticExecutorService.schedule(
 					() -> TrainingExerciseBase.playSound("sounds/chime.wav"), chimeDelay, TimeUnit.MILLISECONDS);
@@ -481,7 +481,7 @@ public class CanvasManager implements CameraView {
 					sb.append(",");
 				}
 
-				sb.append(r.getCameraName());
+				sb.append(r.getCameraName().replaceAll(":", "-"));
 				sb.append(":");
 				sb.append(r.getRelativeVideoFile().getPath());
 			}

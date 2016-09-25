@@ -290,6 +290,12 @@ public class PluginEngine implements Runnable {
 			}
 		}
 
+		try {
+			watcher.close();
+		} catch (IOException e) {
+			logger.error("Error when stopping plugins directory watcher", e);
+		}
+		
 		logger.debug("Stopped watching plugins directory");
 	}
 }

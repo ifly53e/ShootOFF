@@ -79,7 +79,7 @@ import com.shootoff.camera.shotdetection.NativeShotDetector;
 import com.shootoff.camera.shotdetection.ShotDetector;
 import com.shootoff.config.Configuration;
 
-public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
+public class PS3EyeCamera extends CalculatedFPSCamera {
 	private static final Logger logger = LoggerFactory.getLogger(PS3EyeCamera.class);
 
 	private static boolean initialized = false;
@@ -110,17 +110,16 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 		if (initialized) return;
 
 		try {
-			final String architecture = System.getProperty("os.arch");
+			final String architecture = System.getProperty("sun.arch.data.model");
 
-			if (logger.isDebugEnabled()) logger.debug("OS type is: {}", architecture);
+			if (logger.isDebugEnabled())
+				logger.debug("OS type is: {}", architecture);
 
-			if (architecture != null
-					&& (architecture.equalsIgnoreCase("amd64") || architecture.equalsIgnoreCase("x86_64"))) {
+			if (architecture != null && "64".equals(architecture)) {
 				logger.trace("Trying to load eyeCam64.dll");
 				eyecamLib = (eyecam) Native.loadLibrary("eyeCam64", eyecam.class);
 				logger.trace("Successfully loaded eyeCam64.dll");
-			} else if (architecture != null && (architecture.equalsIgnoreCase("i386")
-					|| architecture.equalsIgnoreCase("i686") || architecture.equalsIgnoreCase("x86"))) {
+			} else if (architecture != null && "32".equals(architecture)) {
 				logger.trace("Trying to load eyeCam32.dll");
 				eyecamLib = (eyecam) Native.loadLibrary("eyeCam32", eyecam.class);
 				logger.trace("Successfully loaded eyeCam32.dll");
@@ -162,11 +161,11 @@ public class PS3EyeCamera extends CalculatedFPSCamera implements Camera {
 
 		if (initialized()) {
 			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_GAIN, 16) == -1) {
-				logger.error("Error setting gain on PS3Eye during initialization,"
+				logger.error("Error setting gain on PS3Eye during initialization, "
 						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
 			}
 			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_EXPOSURE, 50) == -1) {
-				logger.error("Error setting exposure on PS3Eye during initialization,"
+				logger.error("Error setting exposure on PS3Eye during initialization, "
 						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
 			}
 
