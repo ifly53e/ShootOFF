@@ -92,6 +92,18 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 	@FXML private ChoiceBox<String> calibratedOptionsChoiceBox;
 	@FXML private CheckBox showArenaShotMarkersCheckBox;
 	@FXML private CheckBox autoAdjustExposureCheckBox;
+	@FXML private Label Hit_Window_X;
+	@FXML private Label Hit_Window_Y;	
+	@FXML private Label hitWindowXLabel;
+	@FXML private Label hitWindowYLabel;	
+	@FXML private Label delayLabel;
+	@FXML private Label delayValueLabel;
+	@FXML private CheckBox isHitModCheckBox;
+	@FXML private Slider hitWindowXSlider;
+	@FXML private Slider hitWindowYSlider;
+	@FXML private Slider delaySlider;
+
+
 
 	private Stage parent;
 	private Configuration config;
@@ -138,6 +150,9 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 		linkSliderToLabel(markerRadiusSlider, markerRadiusLabel);
 		linkSliderToLabel(virtualMagazineSlider, virtualMagazineLabel);
 		linkSliderToLabel(malfunctionsSlider, malfunctionsLabel);
+		linkSliderToLabel(delaySlider, delayValueLabel);
+		linkSliderToLabel(hitWindowXSlider, hitWindowXLabel);
+		linkSliderToLabel(hitWindowYSlider, hitWindowYLabel);
 
 		for (String webcamName : config.getWebcams().keySet()) {
 			final Camera c = config.getWebcams().get(webcamName);
@@ -174,6 +189,29 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 		calibratedOptionsChoiceBox.setValue(config.getCalibratedFeedBehavior().toString());
 		showArenaShotMarkersCheckBox.setSelected(config.showArenaShotMarkers());
 		autoAdjustExposureCheckBox.setSelected(config.autoAdjustExposure());
+		
+		isHitModCheckBox.setSelected(config.getUseHitMod());
+
+		delaySlider.setDisable(true);
+		delaySlider.setValue(config.getDelayValue());
+		delayLabel.setDisable(true);
+		//delayValueLabel.setDisable(true);
+		delayValueLabel.setText(String.valueOf(config.getDelayValue()));
+		
+		Hit_Window_X.setDisable(true);
+		hitWindowXLabel.setText(String.valueOf(config.getHitWindowX()));
+		hitWindowXSlider.setDisable(true);
+		hitWindowXSlider.setValue(config.getHitWindowX());
+		//hitWindowXLabel.setDisable(true);
+		
+		hitWindowYSlider.setDisable(true);
+		Hit_Window_Y.setDisable(true);
+		hitWindowYLabel.setText(String.valueOf(config.getHitWindowY()));
+		//hitWindowYLabel.setDisable(true);	
+		hitWindowYSlider.setValue(config.getHitWindowY());
+		
+
+
 	}
 
 	private void linkSliderToLabel(final Slider slider, final Label label) {
@@ -292,7 +330,7 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 	public void registerCameraClicked(ActionEvent event) {
 		collectIpCamInfo();
 	}
-
+	
 	private void collectIpCamInfo() {
 		final Stage ipcamStage = new Stage();
 		final GridPane ipcamPane = new GridPane();
@@ -425,6 +463,10 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 		config.setCalibratedFeedBehavior(CalibrationOption.fromString(calibratedOptionsChoiceBox.getValue()));
 		config.setShowArenaShotMarkers(showArenaShotMarkersCheckBox.isSelected());
 		config.setAutoAdjustExposure(autoAdjustExposureCheckBox.isSelected());
+		config.setDelayValue((float)delaySlider.getValue());
+		config.setUseHitMod(isHitModCheckBox.isSelected());
+		config.setHitWindowX((float)hitWindowXSlider.getValue());
+		config.setHitWindowY((float)hitWindowYSlider.getValue());
 		
 		if (config.writeConfigurationFile()) {
 			calibrationConfigurator.calibratedFeedBehaviorsChanged();
@@ -434,4 +476,29 @@ public class PreferencesController implements DesignateShotRecorderListener, Cam
 			}
 		}
 	}
-}
+	
+	@FXML
+	public void isHitModCheckBoxClicked(ActionEvent event) {
+		if(!isHitModCheckBox.isSelected()){
+			hitWindowXSlider.setDisable(true);
+			hitWindowYSlider.setDisable(true);
+			delaySlider.setDisable(true);
+			Hit_Window_X.setDisable(true);
+			Hit_Window_Y.setDisable(true);	
+			hitWindowXLabel.setDisable(true);
+			hitWindowYLabel.setDisable(true);	
+			delayLabel.setDisable(true);
+			delayValueLabel.setDisable(true);
+		}else{
+			hitWindowXSlider.setDisable(false);
+			hitWindowYSlider.setDisable(false);
+			delaySlider.setDisable(false);
+			Hit_Window_X.setDisable(false);
+			Hit_Window_Y.setDisable(false);	
+			hitWindowXLabel.setDisable(false);
+			hitWindowYLabel.setDisable(false);	
+			delayLabel.setDisable(false);
+			delayValueLabel.setDisable(false);
+		}
+	}//end ishitmodcheckboxclicked
+}//end class

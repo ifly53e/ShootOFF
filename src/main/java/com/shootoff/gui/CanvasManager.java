@@ -652,7 +652,15 @@ public class CanvasManager implements CameraView {
 		for (ListIterator<Target> li = targets.listIterator(targets.size()); li.hasPrevious();) {
 			Target target = li.previous();
 
-			Optional<Hit> hit = target.isHit(shot);
+			//Optional<Hit> hit = target.isHit(shot);
+			logger.debug("checking target: {}, {}",target, target.getTargetFile().getName());
+
+			Optional<Hit> hit;
+			if(config.getUseHitMod()){
+				hit = target.isHit_mod(shot);
+			}else{
+				hit = target.isHit(shot);
+			}
 
 			if (hit.isPresent()) {
 				TargetRegion region = hit.get().getHitRegion();

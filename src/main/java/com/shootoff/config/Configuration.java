@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -77,7 +77,7 @@ import ch.qos.logback.core.ConsoleAppender;
 /**
  * Used to parse, store, and update configuration data from a file and in memory
  * at run time. All of ShootOFF's global settings are managed by this class.
- * 
+ *
  * @author phrack
  */
 public class Configuration {
@@ -118,6 +118,16 @@ public class Configuration {
 
 	private static final int DEFAULT_DISPLAY_WIDTH = 640;
 	private static final int DEFAULT_DISPLAY_HEIGHT = 480;
+
+	private static final String DELAYVALUE_PROP = "shootoff.delayvalue";
+	private static final String HITWINDOW_X_PROP = "shootoff.hitwindow.x";
+	private static final String HITWINDOW_Y_PROP = "shootoff.hitwindow.y";
+	private static final String USEHITMOD_PROP = "shootoff.usehitmod";
+
+	private float delayValue = (float) 100.0;
+	private float hitWindowX = (float) 10.0;
+	private float hitWindowY = (float) 10.0;
+	private boolean useHitMod = false;
 
 	private InputStream configInput;
 	private String configName;
@@ -162,18 +172,18 @@ public class Configuration {
 	private CalibrationOption calibratedFeedBehavior = CalibrationOption.ONLY_IN_BOUNDS;
 	private boolean showArenaShotMarkers = false;
 	private boolean autoAdjustExposure = true;
-	
+
 	private static Configuration config = null;
 	public static Configuration getConfig()
 	{
 		return config;
 	}
-	
+
 	protected Configuration(InputStream configInputStream, String name) throws IOException, ConfigurationException {
 		configInput = configInputStream;
 		configName = name;
 		readConfigurationFile();
-		
+
 		config = this;
 
 	}
@@ -200,7 +210,7 @@ public class Configuration {
 	/**
 	 * Loads the configuration from a file named <tt>name</tt> and then updates
 	 * the configuration using the programs arguments stored in <tt>args</tt>.
-	 * 
+	 *
 	 * @param name
 	 *            the configuration file to load properties from
 	 * @param args
@@ -222,7 +232,7 @@ public class Configuration {
 	public Configuration(String[] args) throws ConfigurationException {
 		configName = DEFAULT_CONFIG_FILE;
 		parseCmdLine(args);
-		
+
 		config = this;
 	}
 
@@ -248,6 +258,7 @@ public class Configuration {
 		} finally {
 			inputStream.close();
 		}
+
 
 		if (prop.containsKey(FIRST_RUN_PROP)) {
 			setFirstRun(Boolean.parseBoolean(prop.getProperty(FIRST_RUN_PROP)));
@@ -367,12 +378,12 @@ public class Configuration {
 				muteMessageChime(message);
 			}
 		}
-		
+
 		if (prop.containsKey(CALIBRATED_FEED_BEHAVIOR_PROP)) {
 			setCalibratedFeedBehavior(
 					CalibrationOption.valueOf(prop.getProperty(CALIBRATED_FEED_BEHAVIOR_PROP)));
 		}
-		
+
 		if (prop.containsKey(SHOW_ARENA_SHOT_MARKERS)) {
 			setShowArenaShotMarkers(Boolean.parseBoolean(prop.getProperty(SHOW_ARENA_SHOT_MARKERS)));
 		}
@@ -380,7 +391,22 @@ public class Configuration {
 		if (prop.contains(CALIBRATE_AUTO_ADJUST_EXPOSURE)) {
 			setAutoAdjustExposure(Boolean.parseBoolean(CALIBRATE_AUTO_ADJUST_EXPOSURE));
 		}
-		
+
+		if (prop.containsKey(USEHITMOD_PROP)) {
+			setUseHitMod(Boolean.parseBoolean(prop.getProperty(USEHITMOD_PROP)));
+		}
+		if (prop.containsKey(HITWINDOW_Y_PROP)) {
+			setHitWindowY(Float.parseFloat(prop.getProperty(HITWINDOW_Y_PROP)));
+		}
+		if (prop.containsKey(HITWINDOW_X_PROP)) {
+			setHitWindowX(Float.parseFloat(prop.getProperty(HITWINDOW_X_PROP)));
+		}
+		if (prop.containsKey(DELAYVALUE_PROP)) {
+			setDelayValue(Float.parseFloat(prop.getProperty(DELAYVALUE_PROP)));
+		}
+
+
+
 		validateConfiguration();
 	}
 
@@ -474,7 +500,11 @@ public class Configuration {
 		prop.setProperty(CALIBRATED_FEED_BEHAVIOR_PROP, calibratedFeedBehavior.name());
 		prop.setProperty(SHOW_ARENA_SHOT_MARKERS, String.valueOf(showArenaShotMarkers));
 		prop.setProperty(CALIBRATE_AUTO_ADJUST_EXPOSURE, String.valueOf(autoAdjustExposure));
-		
+		prop.setProperty(DELAYVALUE_PROP, String.valueOf(delayValue));
+		prop.setProperty(HITWINDOW_X_PROP, String.valueOf(hitWindowX));
+		prop.setProperty(HITWINDOW_Y_PROP, String.valueOf(hitWindowY));
+		prop.setProperty(USEHITMOD_PROP, String.valueOf(useHitMod));
+
 		OutputStream outputStream = new FileOutputStream(configName);
 
 		try {
@@ -767,7 +797,7 @@ public class Configuration {
 			// noisy and doesn't output information we care about.
 			Logger webcamCaptureLogger = (Logger) loggerContext.getLogger("com.github.sarxos");
 			webcamCaptureLogger.setLevel(Level.INFO);
-			
+
 			// Drop WebcamDiscoveryService even lower because it is extremely
 			// noisy
 			Logger webcamDiscoveryLogger = (Logger) loggerContext.getLogger("com.github.sarxos.webcam.WebcamDiscoveryService");
@@ -808,15 +838,15 @@ public class Configuration {
 	public void unmuteMessageChime(String message) {
 		messagesChimeMuted.remove(message);
 	}
-	
+
 	public void setCalibratedFeedBehavior(CalibrationOption calibrationOption) {
 		calibratedFeedBehavior = calibrationOption;
 	}
-	
+
 	public void setShowArenaShotMarkers(boolean showMarkers) {
 		showArenaShotMarkers = showMarkers;
 	}
-	
+
 
 	public void setAutoAdjustExposure(boolean autoAdjust) {
 		autoAdjustExposure = autoAdjust;
@@ -847,7 +877,7 @@ public class Configuration {
 
 		currentExercise = exercise;
 	}
-	
+
 	public void setPlugin(Plugin plugin) {
 		currentPlugin = plugin;
 	}
@@ -955,7 +985,7 @@ public class Configuration {
 	public Optional<TrainingExercise> getExercise() {
 		return Optional.ofNullable(currentExercise);
 	}
-	
+
 	public Optional<Plugin> getPlugin() {
 		return Optional.ofNullable(currentPlugin);
 	}
@@ -979,16 +1009,46 @@ public class Configuration {
 	public boolean isChimeMuted(String message) {
 		return messagesChimeMuted.contains(message);
 	}
-	
+
 	public CalibrationOption getCalibratedFeedBehavior() {
 		return calibratedFeedBehavior;
 	}
-	
+
 	public boolean showArenaShotMarkers() {
 		return showArenaShotMarkers;
 	}
-	
+
 	public boolean autoAdjustExposure() {
 		return autoAdjustExposure;
+	}
+
+
+
+	public float getDelayValue() {
+		return delayValue;
+	}
+
+	public float getHitWindowX() {
+		return hitWindowX;
+	}
+	public float getHitWindowY() {
+		return hitWindowY;
+	}
+	public boolean getUseHitMod() {
+		return useHitMod;
+	}
+
+	public void setDelayValue(float delayVal) {
+		this.delayValue = delayVal;
+	}
+
+	public void setHitWindowX(float hitWinXVal) {
+		this.hitWindowX=hitWinXVal;
+	}
+	public void setHitWindowY(float hitWinYVal) {
+		this.hitWindowY=hitWinYVal;
+	}
+	public void setUseHitMod(boolean hitModVal) {
+		this.useHitMod=hitModVal;
 	}
 }

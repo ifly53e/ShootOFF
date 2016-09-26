@@ -55,6 +55,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
 /**
@@ -562,6 +563,172 @@ public class TargetView implements Target {
 
 		return Optional.empty();
 	}
+	
+	public Map<Long, Bounds> timeMap;// = new HashMap<Long, Bounds>();
+	public List<Long> timeList;// = new ArrayList<Long>();
+
+	@Override
+	public Optional<Hit> isHit_mod(Shot shot)  {
+		logger.debug("in altered isHit");
+		synchronized (timeList) {
+			synchronized (timeMap){
+
+				int counter = ((TargetView) this).timeList.size()-1;
+				logger.debug("starting while loop counter is: {}",counter);
+				//start from the end of the list
+				while(counter >= 0){
+					//only check targets that are visible
+					//only proceed if the shot is inside the bounds
+					//or do I squeeze the bounds down here instead?
+					Bounds nodeBounds_wholeTarget = ((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter));
+					double scaleForReducedBoundsX = config.get().getHitWindowX()/10.0;//.4;
+					double scaleForReducedBoundsY = config.get().getHitWindowY()/10.0;//.4;
+					Rectangle rect = new Rectangle(nodeBounds_wholeTarget.getMinX()+((nodeBounds_wholeTarget.getWidth()-nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX)/2), 
+							nodeBounds_wholeTarget.getMinY()+((nodeBounds_wholeTarget.getHeight()-nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY)/2), 
+							nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX,  
+							nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY);
+					//Bounds nodeBounds_reducedTarget  = rect.getLayoutBounds();
+
+					if(targetGroup.isVisible() && nodeBounds_wholeTarget.contains(shot.getX(),shot.getY())) logger.debug("NON-reduced HIT");
+
+
+					if(targetGroup.isVisible() && rect.contains(shot.getX(),shot.getY())){
+						logger.debug("reduced HIT");
+						logger.debug("found a hit at: {}, {}, {}",((TargetView) this).timeList.get(counter), ((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter)).getMaxX(),((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter)).getMaxY());
+						logger.debug(" for shotTime:{}",shot.getTimestamp());
+						logger.debug("time difference: {}",shot.getTimestamp()-((TargetView) this).timeList.get(counter));
+						logger.debug("counter is: {}",counter);
+
+						//finger presses trigger -> laser hits screen -> shot detected ->  shot time recorded -> shot entered into list
+						//target coordinates calculated -> target time recorded -> target displayed on screen (independent and moving forward as shot is processed)
+						//so get target some time in the past to prevent lead
+						//trying to prevent these cases when:
+						//user sees hit on target -> computer puts the shot behind the target and does not return a hit
+						//user sees hit in front of target -> computer puts the shot on the target and returns a hit
+
+						if(shot.getTimestamp()-((TargetView) this).timeList.get(counter) < this.config.get().getDelayValue()){ //100 ){ //make a slider in preferences to adjust this number?
+							counter--;
+							continue;
+						}
+
+							// Target was hit, see if a specific region was hit
+							for (int i = targetGroup.getChildren().size() - 1; i >= 0; i--) {
+								Node node = targetGroup.getChildren().get(i);//(i);
+
+								//Bounds nodeBounds = targetGroup.getLocalToParentTransform().transform(node.getBoundsInParent());
+								Bounds nodeBounds_region = ((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter));
+
+
+								//squeeze the node bounds down by some amount since lead and lag are still present but not as bad as before....
+
+								logger.debug("shot:{}, {}",shot.getX(),shot.getY());
+								logger.debug("nodeBounds_region:{}, {}, {}, {}",nodeBounds_region.getMinX(),nodeBounds_region.getMaxX(),nodeBounds_region.getMinY(),nodeBounds_region.getMaxY());
+
+								final int adjustedX = (int) (shot.getX() - nodeBounds_region.getMinX());
+								final int adjustedY = (int) (shot.getY() - nodeBounds_region.getMinY());
+
+								logger.debug("adjX,Y {}, {}",adjustedX, adjustedY);
+
+								if (nodeBounds_region.contains(shot.getX(), shot.getY())) {
+									logger.debug("shot is inside the node");
+									// If we hit an image region on a transparent pixel,
+									// ignore it
+									final TargetRegion region = (TargetRegion) node;
+
+									// Ignore regions where ignoreHit tag is true
+									if (region.tagExists(TargetView.TAG_IGNORE_HIT)
+											&& Boolean.parseBoolean(region.getTag(TargetView.TAG_IGNORE_HIT)))
+										continue;
+
+									if (region.getType() == RegionType.IMAGE) {
+										logger.debug("found the image region");
+										// The image you get from the image view is its
+										// original size. We need to resize it if it has
+										// changed size to accurately determine if a pixel
+										// is transparent
+										Image currentImage = ((ImageRegion) region).getImage();
+
+										if (adjustedX < 0 || adjustedY < 0) {
+											logger.debug(
+													"An adjusted pixel is negative: Adjusted ({}, {}), Original ({}, {}), "
+															+ " nodeBounds.getMin ({}, {})",
+													adjustedX, adjustedY, shot.getX(), shot.getY(), nodeBounds_region.getMaxX(),
+													nodeBounds_region.getMinY());
+											if (logger.isInfoEnabled()) logger.info("adjustedPixel negative");
+											logger.debug("returned empty");
+											return Optional.empty();
+										}
+
+										if (Math.abs(currentImage.getWidth() - nodeBounds_region.getWidth()) > .0000001
+												|| Math.abs(currentImage.getHeight() - nodeBounds_region.getHeight()) > .0000001) {
+
+											BufferedImage bufferedOriginal = SwingFXUtils.fromFXImage(currentImage, null);
+
+											java.awt.Image tmp = bufferedOriginal.getScaledInstance((int) nodeBounds_region.getWidth(),
+													(int) nodeBounds_region.getHeight(), java.awt.Image.SCALE_SMOOTH);
+											BufferedImage bufferedResized = new BufferedImage((int) nodeBounds_region.getWidth(),
+													(int) nodeBounds_region.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+											Graphics2D g2d = bufferedResized.createGraphics();
+											g2d.drawImage(tmp, 0, 0, null);
+											g2d.dispose();
+
+											try {
+												if (adjustedX >= bufferedResized.getWidth() || adjustedY >= bufferedResized.getHeight()
+														|| bufferedResized.getRGB(adjustedX, adjustedY) >> 24 == 0) {
+													logger.debug("transparent region found 1");
+													continue;
+												}
+											} catch (ArrayIndexOutOfBoundsException e) {
+												String message = String.format(
+														"Index out of bounds while trying to find adjusted coordinate (%d, %d) "
+																+ "from original (%.2f, %.2f) in adjusted BufferedImage for target %s "
+																+ "with width = %d, height = %d",
+														adjustedX, adjustedY, shot.getX(), shot.getY(), getTargetFile().getPath(),
+														bufferedResized.getWidth(), bufferedResized.getHeight());
+												logger.error(message, e);
+												logger.debug("index out of bounds");
+												logger.debug("returned empty");
+												return Optional.empty();
+											}
+										} else {
+											if (adjustedX >= currentImage.getWidth() || adjustedY >= currentImage.getHeight()
+													|| currentImage.getPixelReader().getArgb(adjustedX, adjustedY) >> 24 == 0) {
+												logger.debug("transparent region found 2");
+												continue;
+											}
+										}
+									} else {
+										logger.debug("did not find an image region");
+										// The shot is in the bounding box but make sure it
+										// is in the shape's
+										// fill otherwise we can get a shot detected where
+										// there isn't actually
+										// a region showing
+										Point2D localCoords = targetGroup.parentToLocal(shot.getX(), shot.getY());
+										if (!node.contains(localCoords)){
+											logger.debug("in bounding box but not in fill");
+											continue;
+										}else{
+											logger.debug("not in bounding box");
+										}
+									}
+
+									logger.debug("returned hit");
+									return Optional.of(new Hit(this, (TargetRegion) node, adjustedX, adjustedY));
+
+								}//end if node contains
+						}//end for
+					}//end if group contains
+						counter--;
+					}//end while
+						logger.debug("at the end of altered isHit...returned empty");
+				return Optional.empty();
+			}//end sync timeMap
+
+		}//end sync timelist
+
+	}//end isHit_mod(shot)
 
 	private void mousePressed() {
 		targetGroup.setOnMousePressed((event) -> {

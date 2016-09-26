@@ -236,6 +236,11 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 			//stopFlag = true;
 			showShots();
 		});
+		this.showShotsButton = addShootOFFButton("7yd Line\nHostage", (event) -> {
+			Button showShotsButton = (Button) event.getSource();
+			manualMode = true;
+			SevenYdLineHostage();
+		});
 		this.showShotsButton = addShootOFFButton("School\nDrills", (event) -> {
 			Button showShotsButton = (Button) event.getSource();
 			manualMode = false;
@@ -379,11 +384,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 			manualMode = true;
 			SevenYdLineSD();
 		});
-		this.showShotsButton = addShootOFFButton("7yd Line\nHostage", (event) -> {
-			Button showShotsButton = (Button) event.getSource();
-			manualMode = true;
-			SevenYdLineHostage();
-		});
+
 		this.showShotsButton = addShootOFFButton("10yd\nLine", (event) -> {
 			Button showShotsButton = (Button) event.getSource();
 			manualMode = true;

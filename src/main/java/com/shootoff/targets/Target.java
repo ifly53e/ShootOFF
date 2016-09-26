@@ -78,4 +78,6 @@ public interface Target {
 	public Group getTargetGroup();
 	
 	void setTargetSelectionListener(TargetSelectionListener selectionListener);
+	
+	Optional<Hit> isHit_mod(Shot shot);
 }
