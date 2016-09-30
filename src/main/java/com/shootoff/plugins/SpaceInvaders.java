@@ -475,7 +475,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 
 	@Override
 	public ExerciseMetadata getInfo() {
-		return new ExerciseMetadata("SpaceInvaders", "1.0", "ifly53e",
+		return new ExerciseMetadata("Space Invaders", "1.0", "ifly53e",
 				"This projector exercise is an adaptation of Space Invaders, the video game from the 80's. "
 						+ "So it turns out that the moving blaster canon has malfunctioned and you have to shoot the aliens"
 						+ "with your laser trainer.  Who would have thought the aliens are vulnerable to 5mw of red light..."
@@ -558,10 +558,10 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 		for (Target theGroups : targets) {
 			theGroups.getTargetGroup().getChildren().clear();
 		}
-		reset();
+		stopExercise();
 	}
 
-	public void reset() {
+	public void stopExercise() {
 		clip.stop();
 		targetAnimation.stop();
 
@@ -601,6 +601,12 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 	public void targetUpdate(com.shootoff.targets.Target target, TargetChange change) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	@Override
+	public void destroy(){
+		stopExercise();
+		super.destroy();
 	}
 
 //	@Override

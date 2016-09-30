@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
- Copyright (C) 2016 phrack. All rights reserved.
- Use of this source code is governed by a BSD-style license that can be
- found in the LICENSE file.
--->
+<!-- Copyright (C) 2016 phrack. All rights reserved. Use of this source code 
+	is governed by a BSD-style license that can be found in the LICENSE file. -->
 
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
@@ -15,53 +12,101 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="shootOffContainer" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shootoff.gui.controller.ShootOFFController">
-   <children>
-      <HBox fx:id="controlsContainer" alignment="TOP_CENTER" minHeight="160.0" prefWidth="200.0" spacing="175.0">
-         <children>
-            <Button mnemonicParsing="false" onMouseClicked="#fileButtonClicked" prefHeight="100.0" prefWidth="150.0" text="File" />
-            <Button mnemonicParsing="false" onMouseClicked="#targetsButtonClicked" prefHeight="100.0" prefWidth="150.0" text="Targets" />
-            <Button mnemonicParsing="false" onMouseClicked="#trainingButtonClicked" prefHeight="100.0" prefWidth="150.0" text="Training" />
-            <Button mnemonicParsing="false" onMouseClicked="#projectorButtonClicked" prefHeight="100.0" prefWidth="150.0" text="Projector" />
-         </children>
-         <padding>
-            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-         </padding>
-      </HBox>
-      <VBox fx:id="bodyContainer">
-         <children>
-            <HBox spacing="30.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <ScrollPane fitToHeight="true" fitToWidth="true" prefViewportWidth="265.0" HBox.hgrow="ALWAYS">
-                     <content>
-                        <TableView fx:id="shotTimerTable" minHeight="0.0" minWidth="0.0" />
-                     </content>
-                  </ScrollPane>
-                  <TabPane fx:id="cameraTabPane" minHeight="480.0" minWidth="640.0" prefHeight="480.0" prefWidth="640.0" tabClosingPolicy="UNAVAILABLE" HBox.hgrow="NEVER" />
-                  <VBox fx:id="buttonsContainer" alignment="CENTER" spacing="30.0">
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#resetClicked" prefHeight="100.0" prefWidth="150.0" text="Reset" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.valignment="CENTER" GridPane.vgrow="NEVER">
-                           <GridPane.margin>
-                              <Insets bottom="2.0" />
-                           </GridPane.margin>
-                        </Button>
-                     </children>
-                  </VBox>
-               </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
-               <padding>
-                  <Insets bottom="30.0" left="30.0" right="30.0" />
-               </padding>
-            </HBox>
-            <ScrollPane fx:id="trainingExerciseScrollPane" hbarPolicy="NEVER" minHeight="150.0" HBox.hgrow="ALWAYS">
-               <content>
-                  <VBox fx:id="trainingExerciseContainer" />
-               </content>
-            </ScrollPane>
-         </children>
-      </VBox>
-   </children>
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="com.shootoff.gui.controller.ShootOFFController"
+	style="-fx-border-color: black;-fx-background-image: url('./flag1.gif');-fx-background-position: center center;-fx-background-repeat: stretch;-fx-background-size: 1600 900">
+
+	<children>
+
+
+		<HBox fx:id="controlsContainer" minHeight="75.0" prefWidth="125.0"
+			spacing="125.0" alignment="CENTER" >
+			<children>
+				<Button mnemonicParsing="false" onMouseClicked="#fileButtonClicked"
+					prefHeight="75.0" prefWidth="125.0" text="File" style="-fx-border-color: black">
+					<font>
+						<Font size="20.0" />
+					</font>
+				</Button>
+				<Button mnemonicParsing="false" onMouseClicked="#projectorButtonClicked"
+					prefHeight="75.0" prefWidth="125.0" text="Projector" style="-fx-border-color: black">
+					<font>
+						<Font size="20.0" />
+					</font>
+				</Button>
+				<Button mnemonicParsing="false" onMouseClicked="#trainingButtonClicked"
+					prefHeight="75.0" prefWidth="125.0" text="Training" style="-fx-border-color: black">
+					<font>
+						<Font size="20.0" />
+					</font>
+				</Button>
+
+				<Button mnemonicParsing="false" onAction="#resetClicked"
+					prefHeight="75.0" prefWidth="125.0" text="Reset"
+					GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS"
+					GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS"
+					style="-fx-border-color: black">
+					<font>
+						<Font size="20.0" />
+					</font>
+				</Button>
+
+			</children>
+			<padding>
+				<Insets bottom="15.0" left="30.0" right="30.0" top="25.0" />
+			</padding>
+		</HBox>
+
+
+
+
+<Accordion >
+    <panes>
+		<TitledPane fx:id="exerciseOptionsPane" text="Exercise Options" style="-fx-border-color: black; setExpanded: false" >
+			
+
+			
+			<HBox fx:id="trainingExerciseContainer" alignment="CENTER"
+				spacing="20.0" style="-fx-border-color: black">
+				<HBox fx:id="buttonsContainer" alignment="CENTER" spacing="8.0" minHeight="60.0" >
+					<children>
+					</children>
+				</HBox>
+			</HBox>
+			
+		</TitledPane>
+    </panes>
+</Accordion>
+
+
+		<VBox fx:id="bodyContainer">
+			<children>
+				<HBox spacing="30.0" VBox.vgrow="NEVER">
+					<children>
+						<TabPane fx:id="cameraTabPane" maxHeight="480" maxWidth="640"
+							minHeight="480" minWidth="640" tabClosingPolicy="UNAVAILABLE"
+							HBox.hgrow="NEVER" style="-fx-border-color: black" />
+
+						<ScrollPane fitToHeight="true" fitToWidth="true"
+							prefViewportWidth="265.0" HBox.hgrow="ALWAYS" style="-fx-border-color: black">
+							<content>
+								<TableView fx:id="shotTimerTable" minHeight="0.0"
+									minWidth="0.0" />
+							</content>
+						</ScrollPane>
+					</children>
+
+					<VBox.margin>
+						<Insets />
+					</VBox.margin>
+					<padding>
+						<Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+					</padding>
+				</HBox>
+			</children>
+		</VBox>
+
+	</children>
 </VBox>

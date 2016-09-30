@@ -122,12 +122,15 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		}
 	}
 
+	boolean inCollectSettings = true;
 	private void collectSettings() {
 		super.pauseShotDetection(true);
 
-		final Stage TrapTargetsStage = new Stage();
+		//final Stage TrapTargetsStage = new Stage();
 		final GridPane TrapTargetsPane = new GridPane();
 		final ColumnConstraints cc = new ColumnConstraints(200);
+		cc.setHalignment(HPos.CENTER);
+		TrapTargetsPane.setHgap(10);
 		final ObservableList<String> targetList = FXCollections.observableArrayList();
 		final ComboBox<String> targetListComboBox = new ComboBox<String>(targetList);
 		final ObservableList<String> skeetChoice = FXCollections.observableArrayList();
@@ -138,11 +141,11 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		final ObservableList<String> maxScale = FXCollections.observableArrayList();
 		final ComboBox<String> maxScaleComboBox = new ComboBox<String>(maxScale);
 		final ComboBox<String> numberOfRoundsComboBox = new ComboBox<String>(roundCounts);
-		final Scene scene = new Scene(TrapTargetsPane);
-		final Button okButton = new Button("OK");
+		//final Scene scene = new Scene(TrapTargetsPane);
+		//final Button okButton = new Button("OK");
 
-		cc.setHalignment(HPos.LEFT);
-		TrapTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
+		//cc.setHalignment(HPos.LEFT);
+		//TrapTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
 
 		skeetChoice.add("No");
 		skeetChoice.add("Yes");
@@ -165,54 +168,87 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		for (int i = 1; i <= MAX_TARGETS; i++)
 			targetCounts.add(Integer.toString(i));
 
-		skeetComboBox.getSelectionModel().select(skeetChoice_reset);
-		TrapTargetsPane.add(new Label("Skeet Mode:"), 0, 0);
-		TrapTargetsPane.add(skeetComboBox, 1, 0);
+		//okButton.setDefaultButton(true);
+		//TrapTargetsPane.add(okButton, 1, 5);
 
-		numberOfRoundsComboBox.getSelectionModel().select(default_max_rounds_reset);
-		TrapTargetsPane.add(new Label("Number of Rounds:"), 0, 1);
-		TrapTargetsPane.add(numberOfRoundsComboBox, 1, 1);
-
-		shootTargetsComboBox.getSelectionModel().select(default_target_count_reset);
-		TrapTargetsPane.add(new Label("Targets per Round:"), 0, 2);
-		TrapTargetsPane.add(shootTargetsComboBox, 1, 2);
-
-		targetListComboBox.getSelectionModel().select(addTargetString_reset);
-		TrapTargetsPane.add(new Label("Target Type:"), 0, 3);
-		TrapTargetsPane.add(targetListComboBox, 1, 3);
-
-		maxScaleComboBox.getSelectionModel().select(theScale_reset);
-		TrapTargetsPane.add(new Label("Target Scale:"), 0, 4);
-		TrapTargetsPane.add(maxScaleComboBox, 1, 4);
-
-		okButton.setDefaultButton(true);
-		TrapTargetsPane.add(okButton, 1, 5);
-
-		okButton.setOnAction((e) -> {
+		//okButton.setOnAction((e) -> {
 			if (skeetComboBox.getSelectionModel().getSelectedIndex() == 0) {
 				skeet = false;
 			} else {
 				skeet = true;
 			}
-			addTargetString = targetListComboBox.getSelectionModel().getSelectedItem();
-			shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
-			theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
-			if (numberOfRoundsComboBox.getSelectionModel().getSelectedItem() == "Continuous") {
-				roundCount = 0;
-			} else {
-				roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
-			}
 
-			TrapTargetsStage.close();
-		});// end OKButton
+			targetListComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				addTargetString = newValue;
+				stopExercise();
+				startExercise();
+		    });
+			//addTargetString = targetListComboBox.getSelectionModel().getSelectedItem();
+			shootTargetsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				shootCount = Integer.parseInt(newValue);
+				stopExercise();
+				startExercise();
+		    });
+			//shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
 
-		TrapTargetsStage.initOwner(null);//(super.getShootOFFStage());
-		TrapTargetsStage.initModality(Modality.WINDOW_MODAL);
-		TrapTargetsStage.setTitle("Trap Target Settings");
-		TrapTargetsStage.setScene(scene);
-		TrapTargetsStage.showAndWait();
+			maxScaleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				theScale = newValue;
+				stopExercise();
+				startExercise();
+		    });
+			//theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
 
-		skeetChoice_reset = skeetComboBox.getSelectionModel().getSelectedIndex();
+			numberOfRoundsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				if (newValue == "Continuous") {
+					roundCount = 0;
+				}else{
+					roundCount = Integer.parseInt(newValue);
+				}
+				stopExercise();
+				startExercise();
+		    });
+//			if (numberOfRoundsComboBox.getSelectionModel().getSelectedItem() == "Continuous") {
+//				roundCount = 0;
+//			} else {
+//				roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
+//			}
+
+			//TrapTargetsStage.close();
+		//});// end OKButton
+
+		//TrapTargetsStage.initOwner(null);//(super.getShootOFFStage());
+		//TrapTargetsStage.initModality(Modality.WINDOW_MODAL);
+		//TrapTargetsStage.setTitle("Trap Target Settings");
+		//TrapTargetsStage.setScene(scene);
+		//TrapTargetsStage.showAndWait();
+		skeetComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			skeetChoice_reset = Integer.parseInt(newValue);
+			stopExercise();
+			startExercise();
+	    });
+		//skeetChoice_reset = skeetComboBox.getSelectionModel().getSelectedIndex();
+
+		skeetComboBox.getSelectionModel().select(skeetChoice_reset);
+		TrapTargetsPane.add(new Label("Skeet Mode:"), 0, 0);
+		TrapTargetsPane.add(skeetComboBox, 1, 0);
+
+		numberOfRoundsComboBox.getSelectionModel().select(default_max_rounds_reset);
+		TrapTargetsPane.add(new Label("Number of Rounds:"), 3, 0);
+		TrapTargetsPane.add(numberOfRoundsComboBox, 4, 0);
+
+		shootTargetsComboBox.getSelectionModel().select(default_target_count_reset);
+		TrapTargetsPane.add(new Label("Targets per Round:"), 6, 0);
+		TrapTargetsPane.add(shootTargetsComboBox, 7, 0);
+
+		targetListComboBox.getSelectionModel().select(addTargetString_reset);
+		TrapTargetsPane.add(new Label("Target Type:"), 9, 0);
+		TrapTargetsPane.add(targetListComboBox, 10, 0);
+
+		maxScaleComboBox.getSelectionModel().select(theScale_reset);
+		TrapTargetsPane.add(new Label("Target Scale:"), 12, 0);
+		TrapTargetsPane.add(maxScaleComboBox, 13, 0);
+
+
 		addTargetString_reset = addTargetString;
 		default_target_count_reset = shootCount - 1;
 		theScale_reset = theScale;
@@ -220,9 +256,14 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		decRoundCount = roundCount + 1;
 		score = 0;
 
+		super.addExercisePane(TrapTargetsPane);
+		inCollectSettings = false;
+
 	}// end collectSettings
 
 	private void startExercise() {
+		if(inCollectSettings)return;
+
 		targetStartingPosX = (thisSuper.getArenaWidth() / 2) - 50;
 		targetStartingPosY = (thisSuper.getArenaHeight() / 2) - 50;
 
@@ -660,11 +701,15 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 
 	@Override
 	public void reset(List<Target> targets) {
-		reset();
+		score = 0;
+		stopExercise();
+		startExercise();
 	}
 
-	@Override
-	public void reset() {
+
+	public void stopExercise() {
+
+		if(targetAnimation == null)return;
 		targetAnimation.stop();
 
 		for (TrapTarget b : shootTargets) {
@@ -675,13 +720,19 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 
 		shootTargets.clear();
 		fromReset = true;
-		init();
+		//init();
 	}// end reset
 
 	@Override
 	public void targetUpdate(Target target, TargetChange change) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void destroy(){
+		stopExercise();
+		super.destroy();
 	}
 
 }// end public class Trap

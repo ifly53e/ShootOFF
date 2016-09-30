@@ -97,19 +97,19 @@ public class PluginEngine implements Runnable {
 	}
 
 	private void registerDefaultStandardTrainingExercises() {
-		pluginListener.registerExercise(new ISSFStandardPistol());
-		pluginListener.registerExercise(new RandomShoot());
-		pluginListener.registerExercise(new ShootForScore());
-		pluginListener.registerExercise(new TimedHolsterDrill());
-		pluginListener.registerExercise(new ParForScore());
-		pluginListener.registerExercise(new ParRandomShot());
+//		pluginListener.registerExercise(new ISSFStandardPistol());
+//		pluginListener.registerExercise(new RandomShoot());
+//		pluginListener.registerExercise(new ShootForScore());
+//		pluginListener.registerExercise(new TimedHolsterDrill());
+//		pluginListener.registerExercise(new ParForScore());
+//		pluginListener.registerExercise(new ParRandomShot());
 	}
 
 	private void registerDefaultProjectorExercises() {
-		pluginListener.registerProjectorExercise(new BouncingTargets());
-		pluginListener.registerProjectorExercise(new DuelingTree());
-		pluginListener.registerProjectorExercise(new ShootDontShoot());
-		pluginListener.registerProjectorExercise(new SteelChallenge());
+//		pluginListener.registerProjectorExercise(new BouncingTargets());
+//		pluginListener.registerProjectorExercise(new DuelingTree());
+//		pluginListener.registerProjectorExercise(new ShootDontShoot());
+//		pluginListener.registerProjectorExercise(new SteelChallenge());
 		pluginListener.registerProjectorExercise(new FrontSight_v3());
 		pluginListener.registerProjectorExercise(new HitMe3());
 		pluginListener.registerProjectorExercise(new Trap());

@@ -160,14 +160,14 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 		}
 
 		if (initialized()) {
-			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_GAIN, 16) == -1) {
+			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 1) == -1) {
 				logger.error("Error setting gain on PS3Eye during initialization, "
 						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
 			}
-			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_EXPOSURE, 50) == -1) {
-				logger.error("Error setting exposure on PS3Eye during initialization, "
-						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
-			}
+//			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_EXPOSURE, 50) == -1) {
+//				logger.error("Error setting exposure on PS3Eye during initialization, "
+//						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
+//			}
 
 			CameraFactory.registerCamera(new PS3EyeCamera());
 			logger.trace("PS3Eye adjusted and registered");
@@ -432,8 +432,10 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	@Override
 	public void run() {
 		while (isOpen()) {
-			if (cameraEventListener.isPresent())
-				cameraEventListener.get().newFrame(getMatFrame());
+			if (cameraEventListener.isPresent()){
+				Mat theMF = getMatFrame();
+				if(theMF!=null)cameraEventListener.get().newFrame(theMF);
+			}
 
 			if (((int) (getFrameCount() % Math.min(getFPS(), 5)) == 0) && cameraState != CameraState.CALIBRATING) {
 				estimateCameraFPS();

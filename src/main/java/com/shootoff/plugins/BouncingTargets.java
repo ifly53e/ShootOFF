@@ -37,6 +37,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.TilePane;
 import javafx.util.Duration;
 
 import com.shootoff.camera.Shot;
@@ -109,7 +110,10 @@ public class BouncingTargets extends ProjectorTrainingExerciseBase implements Tr
 
 		final ColumnConstraints cc = new ColumnConstraints(100);
 		cc.setHalignment(HPos.CENTER);
-		bouncingTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
+		bouncingTargetsPane.setHgap(10);
+		//bouncingTargetsPane.setStyle("-fx-background-color: lightblue");// -fx-border-color: lightblue");
+		//bouncingTargetsPane.setStyle("-fx-background-color: blue");// -fx-background-insets: 0, 1 1 0 0; -fx-padding: 4");
+		//bouncingTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
 
 		final int MAX_TARGETS = 10;
 		final int MAX_VELOCITY = 30;
@@ -128,8 +132,12 @@ public class BouncingTargets extends ProjectorTrainingExerciseBase implements Tr
 			stopExercise();
 			startExercise();
 	    });
+		Label spacer = new Label("   ");
+		//spacer.setStyle("-fx-background-color: black");
+		//shootTargetsComboBox.setStyle("-fx-background-color: red;-fx-background-insets: 0, 0 1 0 0; -fx-padding: 4");
 		bouncingTargetsPane.add(new Label("Shoot Targets:"), 0, 0);
 		bouncingTargetsPane.add(shootTargetsComboBox, 1, 0);
+		bouncingTargetsPane.add(spacer, 2, 0);
 
 		final ComboBox<String> dontShootTargetsComboBox = new ComboBox<String>(targetCounts);
 		dontShootTargetsComboBox.getSelectionModel().select(DONT_SHOOT_DEFAULT_COUNT);
@@ -138,8 +146,11 @@ public class BouncingTargets extends ProjectorTrainingExerciseBase implements Tr
 			stopExercise();
 			startExercise();
 	    });
-		bouncingTargetsPane.add(new Label("Don't Shoot Targets:"), 0, 1);
-		bouncingTargetsPane.add(dontShootTargetsComboBox, 1, 1);
+		bouncingTargetsPane.add(new Label("Don't Shoot Targets:"), 3, 0);
+		bouncingTargetsPane.add(dontShootTargetsComboBox, 4, 0);
+		Label spacer2 = new Label("   ");
+		//spacer2.setStyle("-fx-background-color: black");
+		bouncingTargetsPane.add(spacer2, 5, 0);
 
 		final ObservableList<String> maxVelocity = FXCollections.observableArrayList();
 		for (int i = 1; i <= MAX_VELOCITY; i++)
@@ -151,13 +162,17 @@ public class BouncingTargets extends ProjectorTrainingExerciseBase implements Tr
 			stopExercise();
 			startExercise();
 	    });
-		bouncingTargetsPane.add(new Label("Max Target Speed:"), 0, 2);
-		bouncingTargetsPane.add(maxVelocityComboBox, 1, 2);
+		bouncingTargetsPane.add(new Label("Max Target Speed:"), 6, 0);
+		bouncingTargetsPane.add(maxVelocityComboBox, 7, 0);
+		Label spacer3 = new Label("   ");
+		//spacer3.setStyle("-fx-background-color: black");
+		bouncingTargetsPane.add(spacer3, 8, 0);
 		
 		final CheckBox removeTargets = new CheckBox();
 		removeTargets.setOnAction((event) -> removeShootTargets = removeTargets.isSelected());
-		bouncingTargetsPane.add(new Label("Remove Hit Shoot Targets:"), 0, 3);
-		bouncingTargetsPane.add(removeTargets, 1, 3);
+		bouncingTargetsPane.add(new Label("Remove Hit Shoot Targets:"), 9, 0);
+		bouncingTargetsPane.add(removeTargets, 10, 0);
+		
 		
 		super.addExercisePane(bouncingTargetsPane);
 	}

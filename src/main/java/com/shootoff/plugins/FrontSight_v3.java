@@ -24,6 +24,7 @@ Return the list of targets from newCourse.getTargets(). The exercise would run L
 package com.shootoff.plugins;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +52,7 @@ import com.shootoff.targets.RegionType;
 import com.shootoff.targets.Target;
 import com.shootoff.targets.TargetRegion;
 import com.shootoff.util.NamedThreadFactory;
+import com.shootoff.gui.LocatedImage;
 import com.shootoff.gui.controller.ShootOFFController;
 
 import javafx.concurrent.Service;
@@ -1715,6 +1717,11 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 	private void SevenYdLineHostage(){
 		this.targets.clear();
 		this.targets = super.setCourse(new File("courses/7ydLineHostOdd_v4.course"));
+		//5TargetLineHigh.jpg x="-545.097737" y="-801.234857
+//		String resourceFilename = "arena/backgrounds/5TargetLineHigh.jpg";
+//		InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
+//		LocatedImage img = new LocatedImage(is, resourceFilename);
+//		super.setArenaBackground(img, -545, -801);
 		presentationTimeforTargetInMilli = (long) 1500;
 		if(manualMode){
 			setupRound();

@@ -132,13 +132,13 @@ public class ExerciseSlide extends Slide implements PluginListener, ItemSelectio
 			
 		noneButton = addNoneButton();
 		
-		final TitledPane universalPane = new TitledPane("Universal Exercises", exerciseItemPane);
-		universalPane.setExpanded(false);
+		//final TitledPane universalPane = new TitledPane("Universal Exercises", exerciseItemPane);
+		//universalPane.setExpanded(false);
 		projectorPane = new TitledPane("Projector Exercises", projectorExerciseItemPane);
 		projectorPane.setDisable(true);
 		projectorPane.setExpanded(false);
 		
-		addBodyNode(new VBox(universalPane, projectorPane));
+		addBodyNode(new VBox(projectorPane));
 	}
 	
 	@Override

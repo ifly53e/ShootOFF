@@ -38,6 +38,7 @@ import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.BorderFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +59,28 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 
 /**
@@ -88,9 +100,10 @@ public class TrainingExerciseBase {
 	private Configuration config;
 	private CamerasSupervisor camerasSupervisor;
 	private CameraViews cameraViews;
-	private VBox buttonsContainer;
+	private HBox buttonsContainer;
 	private Pane trainingExerciseContainer;
 	private TableView<ShotEntry> shotTimerTable;
+	protected ShootOFFController myShootOFFController;
 	private boolean changedRowColor = false;
 	private boolean haveDelayControls = false;
 	private boolean haveParControls = false;
@@ -111,6 +124,7 @@ public class TrainingExerciseBase {
 	public void init(Configuration config, CamerasSupervisor camerasSupervisor, ShootOFFController controller) {
 		init(config, camerasSupervisor, controller.getButtonsPane(), controller.getShotEntryTable());
 		this.cameraViews = (CameraViews) controller;
+		this.myShootOFFController = controller;
 		this.trainingExerciseContainer = controller.getTrainingExerciseContainer();
 
 		if (cameraViews.getArenaView().isPresent()) {
@@ -121,10 +135,14 @@ public class TrainingExerciseBase {
 			exerciseLabels.put(arenaView, exerciseLabel);
 		}
 	}
+	
+	public ShootOFFController getShootOFFController(){
+		return this.myShootOFFController;
+	}
 
 	// This is only required for unit tests where we don't want to create a full
 	// ShootOFFController
-	public void init(final Configuration config, final CamerasSupervisor camerasSupervisor, final VBox buttonsPane,
+	public void init(final Configuration config, final CamerasSupervisor camerasSupervisor, final HBox buttonsPane,
 			final TableView<ShotEntry> shotEntryTable) {
 		this.config = config;
 		this.camerasSupervisor = camerasSupervisor;
@@ -272,6 +290,24 @@ public class TrainingExerciseBase {
 	 */
 	public void addExercisePane(Pane pane) {
 		trainingExerciseContainer.getChildren().add(pane);
+		myShootOFFController.openExerciseOptionsPane();
+		//trainingExerciseContainer.setStyle("-fx-background-color: lightblue");
+	    // make all of the Controls and Panes inside the grid fill their grid cell, 
+	    // align them in the center and give them a filled background.
+	    // you could also place each of them in their own centered StackPane with 
+	    // a styled background to achieve the same effect.
+//	    for (Node n: trainingExerciseContainer.getChildren()) {
+//	      if (n instanceof Label) {
+//	    	  Label control = (Label) n;
+//	        control.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+//	        control.setStyle("-fx-background-color: cornsilk; -fx-alignment: center;");
+//	      }
+//	      if (n instanceof Pane) {
+//	        Pane pane1 = pane;
+//	        pane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+//	        pane.setStyle("-fx-background-color: lightblue; -fx-alignment: center;");
+//	      }
+//	    }
 		exercisePanes.add(pane);
 	}
 
@@ -290,10 +326,15 @@ public class TrainingExerciseBase {
 	 * @return the new button that was added to the main ShootOFF window
 	 */
 	public Button addShootOFFButton(final String text, final EventHandler<ActionEvent> eventHandler) {
+		myShootOFFController.openExerciseOptionsPane();
 		final Button exerciseButton = new Button(text);
-		Button resetButton = (Button) buttonsContainer.getChildren().get(0);
+		//Button resetButton = (Button) buttonsContainer.getChildren().get(0);
+		exerciseButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
+		exerciseButton.setTextAlignment(TextAlignment.CENTER);
+		exerciseButton.setWrapText(true);
+		exerciseButton.setFont(new Font("Verdana", 14));
 		exerciseButton.setOnAction(eventHandler);
-		exerciseButton.setPrefSize(resetButton.getPrefWidth(), resetButton.getPrefHeight());
+		//exerciseButton.setPrefSize(resetButton.getPrefWidth(), resetButton.getPrefHeight());
 		exerciseButtons.add(exerciseButton);
 
 		buttonsContainer.getChildren().add(exerciseButton);
@@ -412,6 +453,7 @@ public class TrainingExerciseBase {
 	 * Perform the equivalent of the user hitting the reset button.
 	 */
 	public void reset() {
+		
 		camerasSupervisor.reset();
 
 		if (changedRowColor) {

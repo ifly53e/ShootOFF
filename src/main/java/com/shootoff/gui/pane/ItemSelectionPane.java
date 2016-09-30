@@ -36,7 +36,13 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.TilePane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
 public class ItemSelectionPane<T> extends ScrollPane {
@@ -105,10 +111,13 @@ public class ItemSelectionPane<T> extends ScrollPane {
 		} else {
 			button = new Button(text);
 		}
-
+		
+		button.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
+		button.setStyle("-fx-font-size: 18");
 		button.setContentDisplay(ContentDisplay.TOP);
 		button.setTextAlignment(TextAlignment.CENTER);
-		button.setPrefSize(ITEM_DIMS, ITEM_DIMS);
+		//button.setPrefSize(ITEM_DIMS, ITEM_DIMS);
+		button.setPrefSize(125, 75);
 		button.setWrapText(true);
 
 		if (graphic.isPresent()) button.setGraphic(graphic.get());

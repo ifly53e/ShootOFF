@@ -144,6 +144,13 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 	private void startExercise()  {
 
+		if(inCollectSettings)return;
+
+		decRoundCount = roundCount;
+		score = 0;
+		hits = 0;
+		misses = 0;
+
 		long scoreTime = finishTime-beepTime;
 		if (scoreTime < 0)scoreTime = 0;
 		//super.showTextOnFeed(String.format("Score: %d  Misses: %d Hits: %d Points Possible: %d Deduction: %d", score-((roundCount*shootCount-hits)*penalty),misses,hits,possiblePoints,((roundCount*shootCount-hits)*penalty) ));
@@ -232,12 +239,15 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 //		}
 //	}
 
+	boolean inCollectSettings = true;
 	private void collectSettings() {
 		super.pauseShotDetection(true);
 
-		final Stage TossUpTargetsStage = new Stage();
+		//final Stage TossUpTargetsStage = new Stage();
 		final GridPane TossUpTargetsPane = new GridPane();
 		final ColumnConstraints cc = new ColumnConstraints(200);
+		cc.setHalignment(HPos.CENTER);
+		TossUpTargetsPane.setHgap(10);
 		final ObservableList<String> targetList = FXCollections.observableArrayList();
 		final ComboBox<String> targetListComboBox = new ComboBox<String>(targetList);
 		final ObservableList<String> shootCountList = FXCollections.observableArrayList();
@@ -246,11 +256,55 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		final ObservableList<String> maxScale = FXCollections.observableArrayList();
 		final ComboBox<String> maxScaleComboBox = new ComboBox<String>(maxScale);
 		final ComboBox<String> numberOfRoundsComboBox = new ComboBox<String>(roundCountList);//ok to use between 1 and 10
-		final Scene scene = new Scene(TossUpTargetsPane);
-		final Button okButton = new Button("OK");
+		//final Scene scene = new Scene(TossUpTargetsPane);
+		//final Button okButton = new Button("OK");
 
-			cc.setHalignment(HPos.LEFT);
-			TossUpTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
+			//cc.setHalignment(HPos.LEFT);
+			//TossUpTargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
+
+
+		//okButton.setDefaultButton(true);
+		//TossUpTargetsPane.add(okButton, 1, 6);
+
+	//okButton.setOnAction((e) -> {
+		targetListComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			addTargetString = newValue;
+			addTargetString_reset = addTargetString;
+			stopExercise();
+			startExercise();
+	    });
+		//addTargetString =  targetListComboBox.getSelectionModel().getSelectedItem();
+		shootTargetsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			shootCount = Integer.parseInt(newValue);
+			default_target_count_reset = shootCount -1;
+			stopExercise();
+			startExercise();
+	    });
+		//shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
+		//timeBetweenTargetMovement = Integer.parseInt(targetTimeComboBox.getSelectionModel().getSelectedItem());
+		maxScaleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			theScale = newValue;
+			theScale_reset = theScale;
+			stopExercise();
+			startExercise();
+	    });
+		//theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
+		numberOfRoundsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			roundCount = Integer.parseInt(newValue);
+			default_max_rounds_reset = roundCount -1;
+			stopExercise();
+			startExercise();
+	    });
+		//roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
+
+		//TossUpTargetsStage.close();
+	//});//end OKButton
+
+	//TossUpTargetsStage.initOwner(null);//(super.getShootOFFStage());
+	//TossUpTargetsStage.initModality(Modality.WINDOW_MODAL);
+	//TossUpTargetsStage.setTitle("TossUp Target Settings");
+	//TossUpTargetsStage.setScene(scene);
+	//TossUpTargetsStage.showAndWait();
 
 			for (int i = 1; i <= 6; i++){
 				shootCountList.add(Integer.toString(i));
@@ -272,31 +326,13 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			maxScale.add("double");
 
 			maxScaleComboBox.getSelectionModel().select(theScale_reset);
-			TossUpTargetsPane.add(new Label("Target Scale:"), 0, 2);
-			TossUpTargetsPane.add(maxScaleComboBox, 1, 2);
+			TossUpTargetsPane.add(new Label("Target Scale:"), 3, 0);
+			TossUpTargetsPane.add(maxScaleComboBox, 4, 0);
 
 			numberOfRoundsComboBox.getSelectionModel().select(default_max_rounds_reset);
-			TossUpTargetsPane.add(new Label("Target Rounds:"), 0, 3);
-			TossUpTargetsPane.add(numberOfRoundsComboBox, 1, 3);
+			TossUpTargetsPane.add(new Label("Target Rounds:"), 6, 0);
+			TossUpTargetsPane.add(numberOfRoundsComboBox, 7, 0);
 
-			okButton.setDefaultButton(true);
-			TossUpTargetsPane.add(okButton, 1, 6);
-
-		okButton.setOnAction((e) -> {
-			addTargetString =  targetListComboBox.getSelectionModel().getSelectedItem();
-			shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
-			//timeBetweenTargetMovement = Integer.parseInt(targetTimeComboBox.getSelectionModel().getSelectedItem());
-			theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
-			roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
-
-			TossUpTargetsStage.close();
-		});//end OKButton
-
-		TossUpTargetsStage.initOwner(null);//(super.getShootOFFStage());
-		TossUpTargetsStage.initModality(Modality.WINDOW_MODAL);
-		TossUpTargetsStage.setTitle("TossUp Target Settings");
-		TossUpTargetsStage.setScene(scene);
-		TossUpTargetsStage.showAndWait();
 
 		addTargetString_reset = addTargetString;
 		default_target_count_reset = shootCount -1;
@@ -306,6 +342,9 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		decRoundCount = roundCount;
 		score = 0;
 
+		super.addExercisePane(TossUpTargetsPane);
+		
+		inCollectSettings = false;
 	}//end collectSettings
 
 	protected List<TossUpTarget> getShootTargets() {
@@ -768,10 +807,14 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 	@Override
 	public void reset(List<Target> targets) {
-		reset();
+		score = 0;
+		stopExercise();
+		startExercise();
 	}
-	@Override
-	public void reset() {
+
+	public void stopExercise() {
+
+		if(targetAnimation==null)return;
 		targetAnimation.stop();
 
 		//clean up the shots we added
@@ -826,7 +869,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		getProjArenaController().getCanvasManager().setShowShots(false);
 		hits = 0;
 		misses = 0;
-		init();
+		//init();
 
 	}//end reset
 
@@ -834,6 +877,12 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	public void targetUpdate(Target target, TargetChange change) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void destroy(){
+		stopExercise();
+		super.destroy();
 	}
 
 }//end public class TossUp

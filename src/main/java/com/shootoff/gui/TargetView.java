@@ -23,6 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +110,8 @@ public class TargetView implements Target {
 		this.targets = Optional.empty();
 		this.userDeletable = userDeletable;
 		this.cameraName = parent.getCameraName();
+		timeList = Collections.synchronizedList(new ArrayList<Long>());
+		timeMap = Collections.synchronizedMap(new HashMap<Long, Bounds>());
 
 		targetGroup.setOnMouseClicked((event) -> {
 			// Skip target selection if click to shoot is being used
@@ -195,17 +199,17 @@ public class TargetView implements Target {
 		getTargetGroup().setVisible(isVisible);
 	}
 
-	@Override
-	public void setPosition(double x, double y) {
-		targetGroup.setLayoutX(x);
-		targetGroup.setLayoutY(y);
-
-		if (config.isPresent() && config.get().getSessionRecorder().isPresent()) {
-			config.get().getSessionRecorder().get().recordTargetMoved(cameraName, this, (int) targetGroup.getLayoutX(),
-					(int) targetGroup.getLayoutY());
-		}
-
-	}
+//	@Override
+//	public void setPosition(double x, double y) {
+//		targetGroup.setLayoutX(x);
+//		targetGroup.setLayoutY(y);
+//
+//		if (config.isPresent() && config.get().getSessionRecorder().isPresent()) {
+//			config.get().getSessionRecorder().get().recordTargetMoved(cameraName, this, (int) targetGroup.getLayoutX(),
+//					(int) targetGroup.getLayoutY());
+//		}
+//
+//	}
 
 	@Override
 	public Point2D getPosition() {
@@ -568,6 +572,34 @@ public class TargetView implements Target {
 	public List<Long> timeList;// = new ArrayList<Long>();
 
 	@Override
+	public void setPosition(double x, double y) {
+		targetGroup.setLayoutX(x);
+		targetGroup.setLayoutY(y);
+
+		long unModifiedPosTime = System.currentTimeMillis();
+
+		synchronized (timeList){
+			if(timeList.size()>=10){
+				timeList.remove(0);
+			}//end if
+
+			if(timeList.add(unModifiedPosTime)){
+				synchronized (timeMap){
+					timeMap.put(unModifiedPosTime,targetGroup.getBoundsInParent());
+				}//end synch timeMap
+			}
+			else{
+				if (logger.isInfoEnabled()) logger.info("did not add to timeList.  size {} target {}",timeList.size(),this);
+			}//end else
+		}//end synch timelist
+
+		if (config.isPresent() && config.get().getSessionRecorder().isPresent()) {
+			config.get().getSessionRecorder().get().recordTargetMoved(cameraName, this, (int) targetGroup.getLayoutX(),
+					(int) targetGroup.getLayoutY());
+		}
+
+	}//end setPosition
+	@Override
 	public Optional<Hit> isHit_mod(Shot shot)  {
 		logger.debug("in altered isHit");
 		synchronized (timeList) {
@@ -581,6 +613,10 @@ public class TargetView implements Target {
 					//only proceed if the shot is inside the bounds
 					//or do I squeeze the bounds down here instead?
 					Bounds nodeBounds_wholeTarget = ((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter));
+					logger.debug("HitWindowX is: " + Double.toString((double)config.get().getHitWindowX()/10.0) );
+					logger.debug("HitWindowY is: " + Double.toString((double)config.get().getHitWindowY()/10.0) );
+					
+					
 					double scaleForReducedBoundsX = config.get().getHitWindowX()/10.0;//.4;
 					double scaleForReducedBoundsY = config.get().getHitWindowY()/10.0;//.4;
 					Rectangle rect = new Rectangle(nodeBounds_wholeTarget.getMinX()+((nodeBounds_wholeTarget.getWidth()-nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX)/2), 
@@ -606,7 +642,11 @@ public class TargetView implements Target {
 						//user sees hit on target -> computer puts the shot behind the target and does not return a hit
 						//user sees hit in front of target -> computer puts the shot on the target and returns a hit
 
+						logger.debug("DelayValue is: " + Integer.toString((int)this.config.get().getDelayValue()) );
+						logger.debug("timeList value is: " + ((TargetView) this).timeList.get(counter));
+						logger.debug("shot time is: " + shot.getTimestamp());
 						if(shot.getTimestamp()-((TargetView) this).timeList.get(counter) < this.config.get().getDelayValue()){ //100 ){ //make a slider in preferences to adjust this number?
+							logger.debug("decreasing counter and leaving loop");
 							counter--;
 							continue;
 						}

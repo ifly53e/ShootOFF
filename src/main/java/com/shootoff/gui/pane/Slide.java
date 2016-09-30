@@ -28,7 +28,14 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 
 public abstract class Slide {
 	// We set a maximum on the number of control buttons at the top
@@ -36,8 +43,8 @@ public abstract class Slide {
 	// size. If slide had more than the maximum, it would break
 	// the size and alignment invariant.
 	public static final int MAX_CONTROL_BUTTONS = 4;
-	public static final int CONTROL_BUTTON_WIDTH = 150;
-	public static final int CONTROL_BUTTON_HEIGHT = 100;
+	public static final int CONTROL_BUTTON_WIDTH = 125;
+	public static final int CONTROL_BUTTON_HEIGHT = 75;
 	
 	private final List<Node> controlNodes = new ArrayList<>();
 	private final List<Node> bodyNodes = new ArrayList<>();
@@ -114,6 +121,10 @@ public abstract class Slide {
 		}
 		
 		final Button controlButton = new Button(text);
+		controlButton.setWrapText(true);
+		controlButton.setTextAlignment(TextAlignment.CENTER);
+		controlButton.setStyle("-fx-font-size: 18");
+		controlButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
 		controlButton.setPrefSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
 		controlButton.setOnAction(eventHandler);
 		controlNodes.add(controlButton);

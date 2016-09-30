@@ -337,6 +337,19 @@ public class CanvasManager implements CameraView {
 		background.setY(0);
 		Platform.runLater(() -> background.setImage(img));
 	}
+	
+	public void updateBackground(Image img, int x, int y) {
+		
+		background.setX(x*.5);
+		background.setY(y*.4);
+		background.setScaleX(1.97);
+		background.setScaleY(2.49);
+		background.setFitWidth(2578.987305);//3156=.82 //1600=1.6  1.97
+		background.setFitHeight(2244.779053);//2988=.75 //1200=1.87 2.49
+		
+		Platform.runLater(() -> background.setImage(img));
+		updateCanvasGroup();
+	}
 
 	private void updateCanvasGroup() {
 		if (!canvasGroup.getChildren().contains(background)) {

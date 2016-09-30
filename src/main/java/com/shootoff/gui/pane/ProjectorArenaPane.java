@@ -381,6 +381,11 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		background = Optional.ofNullable(img);
 		canvasManager.updateBackground(img);
 	}
+	
+	public void setArenaBackground(LocatedImage img, int x, int y) {
+		background = Optional.ofNullable(img);
+		canvasManager.updateBackground(img, x, y);
+	}
 
 	/**
 	 * Used to temporarily save the background before autocalibration

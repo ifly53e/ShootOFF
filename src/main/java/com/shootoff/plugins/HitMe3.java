@@ -24,32 +24,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import com.shootoff.camera.Shot;
+import com.shootoff.targets.Hit;
+import com.shootoff.targets.Target;
+
 import javafx.animation.KeyFrame;
+//import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.event.ActionEvent;
-
-import com.shootoff.camera.Shot;
-import com.shootoff.targets.Hit;
-import com.shootoff.targets.Target;
-import com.shootoff.targets.TargetRegion;
 
 public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExercise {
 	private static Color myColor = new Color(0.0, 0.0, 0.0, 0.0);
@@ -70,9 +65,9 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 	private final static String POINTS_COL_NAME = "Score";
 	private final static int POINTS_COL_WIDTH = 60;
 	private boolean fromReset = false;
-	private String addTargetString = "nothing here";
-	private String theScale = "nothing here";
-	private int shootCount = 4;
+	private String addTargetString = DEFAULT_TARGET_STRING;//"nothing here";
+	private String theScale = DEFAULT_SCALE;//"nothing here";
+	private int shootCount = 1;
 	private int roundCount = 5;
 	private int timeBetweenTargetMovement = 2;
 	private int misses = 0;
@@ -139,12 +134,16 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 		startExercise();
 	}//end init
 
+	static Timeline soundAnimation;
 	private void startExercise()  {
+		if(inCollectSettings)return;
+		score = 0;
+		decRoundCount = roundCount;
 		//super.showTextOnFeed(String.format("Score: %f  Misses: %d Hits: %d %nTotal Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ));
 
 		String path = "targets/";
 		String fileType = ".target";
-		addTargets(shootTargets, path+addTargetString+fileType, shootCount);
+
 		//myLabel = thisSuper.arenaController.getCanvasManager().addProjectorMessage(String.format("Score: %d", score), Color.YELLOW); //getCanvasGroup().getChildren().set(1,myLabel);
 
 		//thisSuper.arenaController.getCanvasManager().hideProjectorMessage(myLabel);
@@ -163,66 +162,110 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 		targetAnimation = new Timeline(new KeyFrame(Duration.millis(timeBetweenTargetMovement * 1000), e -> updateTargets()));
 		targetAnimation.setCycleCount(roundCount);
 
-		playSound("sounds/voice/shootoff-makeready.wav");
-		try {
-			Thread.sleep((long) 3500.);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		playSound("sounds/beep.wav");
-		beepTime = System.currentTimeMillis();
-		targetAnimation.play();
-		pauseShotDetection(false);
+		//playSound("sounds/voice/shootoff-makeready.wav");
+		//Media media = new Media("sounds/voice/shootoff-makeready.wav");
+		//final MediaPlayer mediaPlayer1 = new MediaPlayer(media);
+		soundAnimation = new Timeline(
+		    new KeyFrame(Duration.ZERO, new EventHandler<ActionEvent>() {
+
+		        @Override
+		        public void handle(ActionEvent t) {
+
+		            playSound("sounds/voice/shootoff-3.wav");
+		        }
+		    }),
+		    new KeyFrame(Duration.seconds(1.2), new EventHandler<ActionEvent>() {
+
+		        @Override
+		        public void handle(ActionEvent t) {
+
+		        	 playSound("sounds/voice/shootoff-2.wav");
+		        }
+		    }),
+		    new KeyFrame(Duration.seconds(2.4), new EventHandler<ActionEvent>() {
+
+		        @Override
+		        public void handle(ActionEvent t) {
+
+		        	playSound("sounds/voice/shootoff-1.wav");
+		        }
+		    }),
+		    new KeyFrame(Duration.seconds(3.6), new EventHandler<ActionEvent>() {
+
+		        @Override
+		        public void handle(ActionEvent t) {
+
+		        	addTargets(shootTargets, path+addTargetString+fileType, shootCount);
+		        	playSound("sounds/beep.wav");
+		    		beepTime = System.currentTimeMillis();
+		    		targetAnimation.play();
+		    		pauseShotDetection(false);
+		        }
+		    })
+		);
+		soundAnimation.play();
+//		try {
+//			Thread.sleep((long) 3500.);
+//		} catch (InterruptedException e1) {
+//			e1.printStackTrace();
+//		}
+
 	}//end start exercise
 
 
+	boolean inCollectSettings = true;
 
 	private void collectSettings() {
 		super.pauseShotDetection(true);
 
-		final Stage HitMe3TargetsStage = new Stage();
+		//final Stage HitMe3TargetsStage = new Stage();
 		final GridPane HitMe3TargetsPane = new GridPane();
 		final ColumnConstraints cc = new ColumnConstraints(200);
+		cc.setHalignment(HPos.CENTER);
+		HitMe3TargetsPane.setHgap(10);
 		final ObservableList<String> targetList = FXCollections.observableArrayList();
 		final ComboBox<String> targetListComboBox = new ComboBox<String>(targetList);
 		final ObservableList<String> targetCounts = FXCollections.observableArrayList();
-		final ComboBox<String> shootTargetsComboBox = new ComboBox<String>(targetCounts);
+		final ObservableList<String> targetCounts2 = FXCollections.observableArrayList();
+		//final ComboBox<String> shootTargetsComboBox = new ComboBox<String>(targetCounts);
 		final ComboBox<String> targetTimeComboBox = new ComboBox<String>(targetCounts);//ok to use between 1 and 10
 		final ObservableList<String> maxScale = FXCollections.observableArrayList();
 		final ComboBox<String> maxScaleComboBox = new ComboBox<String>(maxScale);
-		final ComboBox<String> numberOfRoundsComboBox = new ComboBox<String>(targetCounts);//ok to use between 1 and 10
-		final Scene scene = new Scene(HitMe3TargetsPane);
-		final Button okButton = new Button("OK");
+		final ComboBox<String> numberOfRoundsComboBox = new ComboBox<String>(targetCounts2);//ok to use between 1 and 10
+		//final Scene scene = new Scene(HitMe3TargetsPane);
+		//final Button okButton = new Button("OK");
 
 
-		if(true){
+		//if(true){
 
-			cc.setHalignment(HPos.LEFT);
-			HitMe3TargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
+			//cc.setHalignment(HPos.LEFT);
+			//HitMe3TargetsPane.getColumnConstraints().addAll(new ColumnConstraints(), cc);
 
+
+//			shootTargetsComboBox.getSelectionModel().select(default_target_count_reset);
+//			HitMe3TargetsPane.add(new Label("Shoot Targets:"), 0, 0);
+//			HitMe3TargetsPane.add(shootTargetsComboBox, 1, 0);
+//			//for future use
+//			shootTargetsComboBox.setVisible(false);
+
+
+
+			HitMe3TargetsPane.add(new Label("Target Face Time:"), 0, 0);
+			HitMe3TargetsPane.add(targetTimeComboBox, 1, 0);
 
 			targetList.add("ISSF");
 			targetList.add("IPSC");
 			targetList.add("SimpleBullseye_score");
 
-			targetListComboBox.getSelectionModel().select(addTargetString_reset);
-			HitMe3TargetsPane.add(new Label("Select Target Type:"), 0, 4);
-			HitMe3TargetsPane.add(targetListComboBox, 1, 4);
 
-			for (int i = 1; i <= MAX_TARGETS; i++)
+			HitMe3TargetsPane.add(new Label("Select Target Type:"), 3, 0);
+			HitMe3TargetsPane.add(targetListComboBox, 4, 0);
+
+			for (int i = 1; i <= 10; i++)
 				targetCounts.add(Integer.toString(i));
 
-
-			shootTargetsComboBox.getSelectionModel().select(default_target_count_reset);
-			HitMe3TargetsPane.add(new Label("Shoot Targets:"), 0, 0);
-			HitMe3TargetsPane.add(shootTargetsComboBox, 1, 0);
-			//for future use
-			shootTargetsComboBox.setVisible(false);
-
-
-			targetTimeComboBox.getSelectionModel().select(default_time_between_target_movement_reset);
-			HitMe3TargetsPane.add(new Label("Target Face Time:"), 0, 1);
-			HitMe3TargetsPane.add(targetTimeComboBox, 1, 1);
+			for (int i = 1; i <= 10; i++)
+				targetCounts2.add(Integer.toString(i));
 
 
 			maxScale.add("one quarter");
@@ -231,38 +274,78 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 			maxScale.add("double");
 
 
+
+			HitMe3TargetsPane.add(new Label("Target Scale:"), 6, 0);
+			HitMe3TargetsPane.add(maxScaleComboBox, 7, 0);
+
+
+
+			HitMe3TargetsPane.add(new Label("Target Rounds:"), 9, 0);
+			HitMe3TargetsPane.add(numberOfRoundsComboBox, 10, 0);
+
+
+			//okButton.setDefaultButton(true);
+			//HitMe3TargetsPane.add(okButton, 1, 5);
+
+		//}
+
+
+		//okButton.setOnAction((e) -> {
+			maxScaleComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				theScale = newValue;
+				theScale_reset = theScale;
+				stopExercise();
+				startExercise();
+		    });
+			//theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
+
+			targetListComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				addTargetString = newValue;
+				addTargetString_reset = addTargetString;
+				stopExercise();
+				startExercise();
+		    });
+			//addTargetString =  targetListComboBox.getSelectionModel().getSelectedItem();
+
+//			shootTargetsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+//				shootCount = Integer.parseInt(newValue);
+//				stopExercise();
+//				startExercise();
+//		    });
+			//shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
+
+			targetTimeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				timeBetweenTargetMovement = Integer.parseInt(newValue);
+				default_time_between_target_movement_reset = timeBetweenTargetMovement -1;
+				stopExercise();
+				startExercise();
+		    });
+			//timeBetweenTargetMovement = Integer.parseInt(targetTimeComboBox.getSelectionModel().getSelectedItem());
+
+
+			numberOfRoundsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+				roundCount = Integer.parseInt(newValue);
+				default_max_rounds_reset = roundCount -1;
+				decRoundCount = roundCount;
+				stopExercise();
+				startExercise();
+		    });
+			//roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
+
+			//HitMe3TargetsStage.close();
+		//});//end OKButton
+
+
+		//HitMe3TargetsStage.initOwner(null);//(super.getShootOFFStage());
+		//HitMe3TargetsStage.initModality(Modality.WINDOW_MODAL);
+		//HitMe3TargetsStage.setTitle("HitMe3 Target Settings");
+		//HitMe3TargetsStage.setScene(scene);
+		//HitMe3TargetsStage.showAndWait();
+
+			targetTimeComboBox.getSelectionModel().select( 5);//default_time_between_target_movement_reset);
+			targetListComboBox.getSelectionModel().select(addTargetString_reset);
 			maxScaleComboBox.getSelectionModel().select(theScale_reset);
-			HitMe3TargetsPane.add(new Label("Target Scale:"), 0, 2);
-			HitMe3TargetsPane.add(maxScaleComboBox, 1, 2);
-
-
 			numberOfRoundsComboBox.getSelectionModel().select(default_max_rounds_reset);
-			HitMe3TargetsPane.add(new Label("Target Rounds:"), 0, 3);
-			HitMe3TargetsPane.add(numberOfRoundsComboBox, 1, 3);
-
-
-			okButton.setDefaultButton(true);
-			HitMe3TargetsPane.add(okButton, 1, 5);
-
-		}
-
-
-		okButton.setOnAction((e) -> {
-			addTargetString =  targetListComboBox.getSelectionModel().getSelectedItem();
-			shootCount = Integer.parseInt(shootTargetsComboBox.getSelectionModel().getSelectedItem());
-			timeBetweenTargetMovement = Integer.parseInt(targetTimeComboBox.getSelectionModel().getSelectedItem());
-			theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
-			roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
-
-			HitMe3TargetsStage.close();
-		});//end OKButton
-
-
-		HitMe3TargetsStage.initOwner(null);//(super.getShootOFFStage());
-		HitMe3TargetsStage.initModality(Modality.WINDOW_MODAL);
-		HitMe3TargetsStage.setTitle("HitMe3 Target Settings");
-		HitMe3TargetsStage.setScene(scene);
-		HitMe3TargetsStage.showAndWait();
 
 		addTargetString_reset = addTargetString;
 		default_target_count_reset = shootCount -1;
@@ -271,6 +354,10 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 		default_max_rounds_reset = roundCount -1;
 		decRoundCount = roundCount;
 		score = 0;
+
+		super.addExercisePane(HitMe3TargetsPane);
+
+		inCollectSettings = false;
 
 	}//end collectSettings
 
@@ -528,9 +615,14 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 	}//end function
 
 
-	@Override
-	public void reset() {
+
+	public void stopExercise() {
+
+		if(targetAnimation == null)return;
 		targetAnimation.stop();
+
+		if(soundAnimation == null)return;
+		soundAnimation.stop();
 
 		for (HitMe3Target b : shootTargets)
 			super.removeTarget(b.getTarget());
@@ -589,7 +681,7 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 		hits = 0;
 		misses = 0;
 
-		init();
+		//init();
 
 	}//end reset
 
@@ -597,15 +689,21 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 
 	@Override
 	public void reset(List<Target> targets) {
-		// TODO Auto-generated method stub
-		reset();
-
+		score = 0;
+		stopExercise();
+		startExercise();
 	}
 
 	@Override
 	public void targetUpdate(Target target, TargetChange change) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void destroy(){
+		stopExercise();
+		super.destroy();
 	}
 
 

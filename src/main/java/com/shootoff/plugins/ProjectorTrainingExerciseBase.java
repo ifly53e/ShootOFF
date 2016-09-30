@@ -32,7 +32,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import com.shootoff.camera.CamerasSupervisor;
@@ -81,7 +81,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	}
 
 	// For unit tests
-	public void init(Configuration config, CamerasSupervisor camerasSupervisor, VBox buttonsContainer,
+	public void init(Configuration config, CamerasSupervisor camerasSupervisor, HBox buttonsContainer,
 			TableView<ShotEntry> shotEntryTable, ProjectorArenaPane arenaPane) {
 		super.init(config, camerasSupervisor, buttonsContainer, shotEntryTable);
 		this.config = config;
@@ -91,6 +91,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	@Override
 	public void reset() {
+		myShootOFFController.closeExerciseOptionsPane();
 		camerasSupervisor.reset();
 		if (config.getExercise().isPresent())
 			config.getExercise().get().reset(arenaPane.getCanvasManager().getTargets());
@@ -272,6 +273,10 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 	public void setArenaBackground(LocatedImage background) {
 		arenaPane.setArenaBackground(background);
 	}
+	
+	public void setArenaBackground(LocatedImage background, int x, int y) {
+		arenaPane.setArenaBackground(background, x, y);
+	}
 
 	/**
 	 * Remove all targets on the arena and replace them with the course
@@ -356,6 +361,7 @@ public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
 
 	@Override
 	public void destroy() {
+		myShootOFFController.closeExerciseOptionsPane();
 		for (Target target : targets)
 			arenaPane.getCanvasManager().removeTarget((TargetView) target);
 
