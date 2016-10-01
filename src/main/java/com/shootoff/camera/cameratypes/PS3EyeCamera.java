@@ -88,7 +88,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	private static final int VIEW_WIDTH = 640;
 	private static final int VIEW_HEIGHT = 480;
 
-	private static eyecam.ps3eye_t ps3ID = null;
+	public static eyecam.ps3eye_t ps3ID = null;
 	private static boolean opened = false;
 	private static boolean closed = true;
 
@@ -100,6 +100,10 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	private static Label fpsValue = new Label("0");
 	private static Stage ps3eyeSettingsStage = new Stage();
 
+	public static eyecam getEyecamLib(){
+		return PS3EyeCamera.eyecamLib;
+	}
+	
 	public PS3EyeCamera() {
 		if (!initialized) {
 			init();
@@ -160,14 +164,18 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 		}
 
 		if (initialized()) {
+			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_EXPOSURE, 35) == -1) {
+				logger.error("Error setting exposure on PS3Eye during initialization, "
+						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
+			}
+			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_GAIN, 12) == -1) {
+				logger.error("Error setting exposure on PS3Eye during initialization, "
+						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
+			}
 			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 1) == -1) {
 				logger.error("Error setting gain on PS3Eye during initialization, "
 						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
 			}
-//			if (eyecamLib.ps3eye_set_parameter(ps3ID, eyecam.ps3eye_parameter.PS3EYE_EXPOSURE, 50) == -1) {
-//				logger.error("Error setting exposure on PS3Eye during initialization, "
-//						+ "shutdown ShootOFF and unplug and re-plug in the PS3Eye to the usb port");
-//			}
 
 			CameraFactory.registerCamera(new PS3EyeCamera());
 			logger.trace("PS3Eye adjusted and registered");
@@ -496,6 +504,10 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	public boolean limitsFrames() {
 		return false;
 	}
+	
+	public eyecam.ps3eye_t getPS3ID(){
+		return ps3ID;
+	}
 
 	public interface eyecam extends Library {
 		public static class ps3eye_t extends PointerType {
@@ -506,6 +518,8 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 				super(ps3eye_t);
 			}
 		}
+		
+
 
 		public static interface ps3eye_parameter {
 			public static final int PS3EYE_AUTO_GAIN = 0; // [false, true]

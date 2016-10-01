@@ -32,6 +32,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import com.shootoff.camera.Shot;
+import com.shootoff.camera.cameratypes.PS3EyeCamera;
+import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
 import com.shootoff.targets.Hit;
 import com.shootoff.gui.LocatedImage;
 import com.shootoff.gui.TargetView;
@@ -49,7 +51,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	final int MAX_TARGETS = 20;
 	final int DEFAULT_TARGET_COUNT = 2;//4 - 1;
 	final int DEFAULT_TIME_BETWEEN_TARGET_MOVEMENT = 6;//1 - 1;
-	final int DEFAULT_MAX_ROUNDS = 19;
+	final int DEFAULT_MAX_ROUNDS = 2;
 	final String DEFAULT_TARGET_STRING = "ISSF";
 	final String DEFAULT_SCALE = "three-quarter";
 	private int default_target_count_reset = DEFAULT_TARGET_COUNT;
@@ -130,6 +132,11 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	@Override
 	public void init() {
 		//thisSuper.getProjArenaController().setBackground(new LocatedImage("file:\\ShootOFF-master\\src\\main\\resources\\arena\\backgrounds\\hickok45_autumn.gif"));
+
+		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
+		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
+			logger.debug("did not set autogain to off in TossUp");
+		}
 		if(!fromReset){
 			String resourceFilename = "arena/backgrounds/hickok45_autumn.gif";
 			InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
@@ -343,7 +350,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		score = 0;
 
 		super.addExercisePane(TossUpTargetsPane);
-		
+
 		inCollectSettings = false;
 	}//end collectSettings
 
@@ -377,7 +384,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			if (scoreTime < 0)scoreTime = 0;
 			double hitPercentage = 0;
 			if (hits+misses !=0) hitPercentage = hits/(double)(hits+misses)*100;
-			super.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
+			//super.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
 
 			thisSuper.getProjArenaController().getCanvasManager().setShowShots(true);
 
@@ -407,19 +414,37 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 				String theFileName = theFile.getName();//  getAbsolutePath();//  getName();
 				b.getTarget().setPosition(incX,400);
 				for(Map.Entry<String, List<Point2D>> e: theMap.entrySet()){
+					//synchronized(e){
 					if(theFileName.compareToIgnoreCase(e.getKey())==0 ){
 						//super.showTextOnFeed(String.format("theFileName was found inside update: %s",theFileName));
-							for (Point2D p2d : e.getValue()){
+						//synchronized(e){	
+						for (Point2D p2d : e.getValue()){
+							if(p2d.equals(null) )continue;
 								Circle myCircle = new Circle(p2d.getX()+incX, p2d.getY()+400,10,Color.YELLOW);
+								
+								
 								listOfCircles.add(myCircle);
 								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle);
+
+								//Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
+								//this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+								Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
+								
+								
+								listOfCircles.add(myCircle2);
+								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
+
+								
+								
 							}//end for
-							for (Point2D p2d : e.getValue()){
-								Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, thisSuper.getCamerasSupervisor().getCameraManager(0).getFrameCount(),3);
-								this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
-							}
+						//}//end synchronized listofcircles
+//							for (Point2D p2d : e.getValue()){
+//								Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
+//								this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+//							}
 						//}//end for
 					}//end if
+					//}//end synch e
 				}//end for
 
 				incX=incX+225;
