@@ -116,10 +116,10 @@ public class CanvasManager implements CameraView {
 	private Optional<ProjectorArenaPane> arenaPane = Optional.empty();
 	private Optional<Bounds> projectionBounds = Optional.empty();
 
-	public CanvasManager(Group canvasGroup, Configuration config, Resetter resetter, String cameraName,
+	public CanvasManager(Group canvasGroup, Resetter resetter, String cameraName,
 			ObservableList<ShotEntry> shotEntries) {
 		this.canvasGroup = canvasGroup;
-		this.config = config;
+		this.config = Configuration.getConfig();
 		this.resetter = resetter;
 		this.cameraName = cameraName;
 		this.shotEntries = shotEntries;
@@ -161,8 +161,10 @@ public class CanvasManager implements CameraView {
 				// addArenaShot when they go through the arena camera feed's
 				// canvas manager
 				if (this instanceof MirroredCanvasManager) {
+					final long shotTimestamp = cameraManager == null ? 0 : cameraManager.getCurrentFrameTimestamp();
+					
 					addShot(
-							new Shot(shotColor, event.getX(), event.getY(), cameraManager.getCurrentFrameTimestamp(), config.getMarkerRadius()),
+							new Shot(shotColor, event.getX(), event.getY(), shotTimestamp, config.getMarkerRadius()),
 							false);
 				} else {
 					cameraManager.injectShot(shotColor, event.getX(), event.getY(), false);
@@ -598,15 +600,15 @@ public class CanvasManager implements CameraView {
 		shots.add(shot);
 		drawShot(shot);
 
-		Optional<String> videoString = createVideoString(shot);
-		Optional<TrainingExercise> currentExercise = config.getExercise();
-		Optional<Hit> hit = checkHit(shot, videoString, isMirroredShot);
+		final Optional<String> videoString = createVideoString(shot);
+		final Optional<TrainingExercise> currentExercise = config.getExercise();
+		final Optional<Hit> hit = checkHit(shot, videoString, isMirroredShot);
 		if (hit.isPresent() && hit.get().getHitRegion().tagExists("command")) executeRegionCommands(hit.get());
 
 		boolean processedShot = false;
 
 		if (arenaPane.isPresent() && projectionBounds.isPresent()) {
-			Bounds b = projectionBounds.get();
+			final Bounds b = projectionBounds.get();
 
 			if (b.contains(shot.getX(), shot.getY())) {
 				final double x_scale = arenaPane.get().getWidth() / b.getWidth();
@@ -619,9 +621,18 @@ public class CanvasManager implements CameraView {
 				processedShot = arenaPane.get().getCanvasManager().addArenaShot(arenaShot, videoString, isMirroredShot);
 			}
 		}
-
-		if (!isMirroredShot && currentExercise.isPresent() && !processedShot) {
-			currentExercise.get().shotListener(shot, hit);
+		
+		if (currentExercise.isPresent() && !processedShot) {
+			// If the canvas is mirrored, use the one without the camera manager
+			// for exercises because that is the one for the arena window.
+			// If we use the arena tab canvas manager the targets will be
+			// copies and will not be the versions of the targets added
+			// by exercises.
+			if ((this instanceof MirroredCanvasManager) && cameraManager == null) {
+				currentExercise.get().shotListener(shot, hit);
+			} else if (!(this instanceof MirroredCanvasManager)) {
+				currentExercise.get().shotListener(shot, hit);
+			}
 		}
 	}
 
@@ -833,9 +844,14 @@ public class CanvasManager implements CameraView {
 
 		targets.add(newTarget);
 
-		Optional<TrainingExercise> enabledExercise = config.getExercise();
-		if (enabledExercise.isPresent())
-			enabledExercise.get().targetUpdate(newTarget, TrainingExercise.TargetChange.ADDED);
+		// If this is a mirrored canvas, only alert exercises of target updates
+		// from the arena window, not the tab
+		if (!(this instanceof MirroredCanvasManager)
+				|| ((this instanceof MirroredCanvasManager) && cameraManager == null)) {
+			final Optional<TrainingExercise> enabledExercise = config.getExercise();
+			if (enabledExercise.isPresent())
+				enabledExercise.get().targetUpdate(newTarget, TrainingExercise.TargetChange.ADDED);
+		}
 
 		return newTarget;
 	}
@@ -856,9 +872,14 @@ public class CanvasManager implements CameraView {
 
 		targets.remove(target);
 
-		Optional<TrainingExercise> enabledExercise = config.getExercise();
-		if (enabledExercise.isPresent())
-			enabledExercise.get().targetUpdate(target, TrainingExercise.TargetChange.REMOVED);
+		// If this is a mirrored canvas, only alert exercises of target updates
+		// from the arena window, not the tab
+		if (!(this instanceof MirroredCanvasManager)
+				|| ((this instanceof MirroredCanvasManager) && cameraManager == null)) {
+			final Optional<TrainingExercise> enabledExercise = config.getExercise();
+			if (enabledExercise.isPresent())
+				enabledExercise.get().targetUpdate(target, TrainingExercise.TargetChange.REMOVED);
+		}
 	}
 
 	public void clearTargets() {

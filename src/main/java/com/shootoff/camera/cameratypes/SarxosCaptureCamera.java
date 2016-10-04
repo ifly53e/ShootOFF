@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
@@ -36,7 +37,6 @@ import com.shootoff.camera.CameraView;
 import com.shootoff.camera.shotdetection.JavaShotDetector;
 import com.shootoff.camera.shotdetection.NativeShotDetector;
 import com.shootoff.camera.shotdetection.ShotDetector;
-import com.shootoff.config.Configuration;
 
 public class SarxosCaptureCamera extends CalculatedFPSCamera {
 	private static final Logger logger = LoggerFactory.getLogger(SarxosCaptureCamera.class);
@@ -46,7 +46,7 @@ public class SarxosCaptureCamera extends CalculatedFPSCamera {
 	private int cameraIndex = -1;
 	private final VideoCapture camera;
 
-	private boolean closing = false;
+	private AtomicBoolean closing = new AtomicBoolean(false);
 
 	// For testing
 	protected SarxosCaptureCamera() {
@@ -110,9 +110,9 @@ public class SarxosCaptureCamera extends CalculatedFPSCamera {
 	public synchronized boolean open() {
 		logger.trace("{} - open request isOpen {} closing {}", getName(), isOpen(), closing);
 
-		if (isOpen() && !closing) return true;
+		if (isOpen() && !closing.get()) return true;
 
-		closing = false;
+		closing.set(false);
 
 		final boolean open = camera.open(cameraIndex);
 
@@ -136,15 +136,15 @@ public class SarxosCaptureCamera extends CalculatedFPSCamera {
 	public synchronized void close() {
 		logger.trace("{} - close request isOpen {} closing {}", getName(), isOpen(), closing);
 
-		if (isOpen() && !closing) {
-			closing = true;
+		if (isOpen() && !closing.get()) {
+			closing.set(true);
 			resetExposure();
 			camera.release();
 
-		} else if (isOpen() && closing) {
+		} else if (isOpen() && closing.get()) {
 			return;
 		} else if (!isOpen()) {
-			closing = false;
+			closing.set(false);
 		}
 
 		CameraFactory.openCamerasRemove(this);
@@ -176,19 +176,18 @@ public class SarxosCaptureCamera extends CalculatedFPSCamera {
 	}
 
 	@Override
-	public ShotDetector getPreferredShotDetector(final CameraManager cameraManager, final Configuration config,
-			final CameraView cameraView) {
+	public ShotDetector getPreferredShotDetector(final CameraManager cameraManager,	final CameraView cameraView) {
 		if (NativeShotDetector.isSystemSupported())
-			return new NativeShotDetector(cameraManager, config, cameraView);
+			return new NativeShotDetector(cameraManager, cameraView);
 		else if (JavaShotDetector.isSystemSupported())
-			return new JavaShotDetector(cameraManager, config, cameraView);
+			return new JavaShotDetector(cameraManager, cameraView);
 		else
 			return null;
 	}
 
 	@Override
 	public void run() {
-		while (isOpen() && !closing) {
+		while (isOpen() && !closing.get()) {
 			if (cameraEventListener.isPresent()) cameraEventListener.get().newFrame(getMatFrame());
 
 			if (((int) (getFrameCount() % Math.min(getFPS(), 5)) == 0) && cameraState != CameraState.CALIBRATING) {
@@ -199,7 +198,7 @@ public class SarxosCaptureCamera extends CalculatedFPSCamera {
 
 		logger.trace("{} camera closed during run thread isOpen {} closing {}", getName(), isOpen(), closing);
 
-		if (!closing) close();
+		if (!closing.get()) close();
 	}
 
 	@Override

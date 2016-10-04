@@ -99,6 +99,13 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 			break;
 		case REMOVED:
 			targets.remove(target);
+			
+			if (repeatExercise && targets.isEmpty()) {
+				repeatExercise = false;
+			} else if (repeatExercise && isStopTarget(target) && !hasStopTarget()) {
+				repeatExercise = false;
+			}
+			
 			break;
 		}
 	}
@@ -114,13 +121,7 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 	}
 
 	private boolean checkTargets(final List<Target> targets) {
-		boolean hasStopTarget = false;
-
-		for (final Target t : targets) {
-			hasStopTarget = isStopTarget(t);
-
-			if (hasStopTarget) break;
-		}
+		boolean hasStopTarget = hasStopTarget();
 
 		if (!hasStopTarget) {
 			List<File> errorMessages = new ArrayList<File>();
@@ -132,13 +133,20 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 
 		return hasStopTarget;
 	}
+	
+	private boolean hasStopTarget() {
+		for (final Target t : targets) {
+			if (isStopTarget(t)) return true;
+		}
+		
+		return false;
+	}
 
 	private void startRound() {
 		if (!repeatExercise) return;
 
-		this.roundTargets = new HashSet<Target>();
-		this.roundTargets.addAll(targets);
-
+		roundTargets = new HashSet<Target>(targets);
+		
 		if (testing) {
 			new AreYouReady().run();
 		} else {
@@ -158,7 +166,6 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 			} else {
 				new Standby().run();
 			}
-
 		}
 	}
 
@@ -237,9 +244,12 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 			if (r.tagExists("subtarget") && r.getTag("subtarget").equalsIgnoreCase("stop_target")) {
 				super.pauseShotDetection(true);
 
-				String roundAnnouncement;
+				final String roundAnnouncement;
 
-				if (roundTargets.size() > 0) {
+				if (roundTargets.size() == 1) {
+					roundAnnouncement = String.format("Your time was %s seconds. You missed one target!",
+							elapsedTimeSeconds);
+				} else if (roundTargets.size() > 1) {
 					roundAnnouncement = String.format("Your time was %s seconds. You missed %d targets!",
 							elapsedTimeSeconds, roundTargets.size());
 				} else {
@@ -247,7 +257,7 @@ public class SteelChallenge extends ProjectorTrainingExerciseBase implements Tra
 				}
 
 				TextToSpeech.say(roundAnnouncement);
-
+				
 				if (testing) {
 					startRound();
 				} else {

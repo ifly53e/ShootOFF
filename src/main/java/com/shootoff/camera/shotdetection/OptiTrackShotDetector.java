@@ -18,6 +18,8 @@
 
 package com.shootoff.camera.shotdetection;
 
+import java.awt.Point;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,21 +27,17 @@ import com.shootoff.camera.CameraManager;
 import com.shootoff.camera.CameraView;
 import com.shootoff.camera.cameratypes.Camera.CameraState;
 import com.shootoff.camera.cameratypes.OptiTrackCamera;
-import com.shootoff.config.Configuration;
 import javafx.scene.paint.Color;
 
 public class OptiTrackShotDetector extends ShotYieldingShotDetector implements CameraStateListener {
-	private final CameraManager cameraManager;
-	private final Configuration config;
-
 	private static final Logger logger = LoggerFactory.getLogger(OptiTrackShotDetector.class);
+	
+	private final CameraManager cameraManager;
 
-	public OptiTrackShotDetector(final CameraManager cameraManager, final Configuration config,
-			final CameraView cameraView) {
-		super(cameraManager, config, cameraView);
+	public OptiTrackShotDetector(final CameraManager cameraManager,	final CameraView cameraView) {
+		super(cameraManager, cameraView);
 
 		this.cameraManager = cameraManager;
-		this.config = config;
 
 		cameraManager.registerCameraStateListener(this);
 	}
@@ -49,7 +47,7 @@ public class OptiTrackShotDetector extends ShotYieldingShotDetector implements C
 	}
 
 	public void cameraStateChange(CameraState state) {
-		logger.debug("got state change {}", state);
+		if (logger.isDebugEnabled()) logger.debug("got state change {}", state);
 		switch (state) {
 		case DETECTING:
 			enableDetection();
@@ -83,12 +81,13 @@ public class OptiTrackShotDetector extends ShotYieldingShotDetector implements C
 	 *            the rgb color of the new shot
 	 */
 	public void foundShot(int x, int y, int rgb) {
-		if (!cameraManager.isDetecting())
-			return;
+		if (!cameraManager.isDetecting()) return;
 
-		Color c = Color.rgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 8) & 0xFF, 1.0);
+		final Point undist = cameraManager.undistortCoords(x,y);
+		
+		if (logger.isTraceEnabled()) logger.trace("Translation: {} {} to {}", x, y, undist);
 
-		super.addShot(c, x, y, true);
+		super.addShot(Color.RED, undist.x, undist.y, true);
 	}
 
 	@Override

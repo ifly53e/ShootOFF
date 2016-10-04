@@ -24,11 +24,11 @@ public class MirroredCanvasManager extends CanvasManager {
 	
 	private MirroredCanvasManager mirroredManager;
 	
-	public MirroredCanvasManager(Group canvasGroup, Configuration config, Resetter resetter, String cameraName,
+	public MirroredCanvasManager(Group canvasGroup, Resetter resetter, String cameraName,
 			ObservableList<ShotEntry> shotEntries, ProjectorArenaPane arenaPane) {
-		super(canvasGroup, config, resetter, cameraName, shotEntries);
+		super(canvasGroup, resetter, cameraName, shotEntries);
 		
-		this.config = config;
+		this.config = Configuration.getConfig();
 		this.arenaPane = arenaPane;
 	}
  
@@ -164,8 +164,10 @@ public class MirroredCanvasManager extends CanvasManager {
 	
 	@Override
 	public void addShot(Shot shot, boolean isMirroredShot) {
-		mirroredManager.mirrorAddShot(
-				new Shot(shot.getColor(), shot.getX(), shot.getY(), shot.getTimestamp(), (int) shot.getMarker().getRadiusX()));
+		final Shot mirroredShot = new Shot(shot.getColor(), shot.getX(), shot.getY(), shot.getTimestamp(), (int) shot.getMarker().getRadiusX());
+		shot.setMirroredShot(mirroredShot);
+		mirroredShot.setMirroredShot(shot);
+		mirroredManager.mirrorAddShot(mirroredShot);
 		super.addShot(shot, isMirroredShot);
 	}
 	

@@ -67,6 +67,7 @@ import com.shootoff.targets.CameraViews;
 import com.shootoff.targets.TargetRegion;
 import com.shootoff.util.TimerPool;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -138,6 +139,8 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		return dpiScaleFactor;
 	}
 
+
+	@SuppressFBWarnings("SIC_INNER_SHOULD_BE_STATIC_ANON")
 	public void init(Configuration config) throws IOException {
 		this.config = config;
 		this.camerasSupervisor = new CamerasSupervisor(config);
@@ -170,8 +173,8 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		});
 
 		targetPane = new TargetSlide(controlsContainer, bodyContainer, this);
-		exerciseSlide = new ExerciseSlide(controlsContainer, bodyContainer, this, config);
-		projectorSlide = new ProjectorSlide(controlsContainer, bodyContainer, config, this, shootOFFStage,
+		exerciseSlide = new ExerciseSlide(controlsContainer, bodyContainer, this);
+		projectorSlide = new ProjectorSlide(controlsContainer, bodyContainer, this, shootOFFStage, 
 				trainingExerciseContainer, this, exerciseSlide);
 
 		pluginEngine = new PluginEngine(exerciseSlide);
@@ -279,19 +282,30 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 				while (change.next()) {
 					for (ShotEntry unselected : change.getRemoved()) {
 						unselected.getShot().getMarker().setFill(unselected.getShot().getColor());
+						
+						if (unselected.getShot().getMirroredShot().isPresent()) {
+							unselected.getShot().getMirroredShot().get().getMarker().setFill(unselected.getShot().getColor());
+						}
 					}
 
 					for (ShotEntry selected : change.getAddedSubList()) {
+						if (selected == null) continue;
+						
 						selected.getShot().getMarker().setFill(TargetRegion.SELECTED_STROKE_COLOR);
+
+						if (selected.getShot().getMirroredShot().isPresent()) {
+							selected.getShot().getMirroredShot().get().getMarker().setFill(TargetRegion.SELECTED_STROKE_COLOR);
+						}
 
 						// Move all selected shots to top the of their z-stack
 						// to ensure visibility
 						for (CameraView cv : camerasSupervisor.getCameraViews()) {
 							CanvasManager cm = (CanvasManager) cv;
 
-							Shape marker = selected.getShot().getMarker();
-							if (cm.getCanvasGroup().getChildren()
-									.indexOf(marker) < cm.getCanvasGroup().getChildren().size() - 1) {
+							final Shape marker = selected.getShot().getMarker();
+							final int shotIndex = cm.getCanvasGroup().getChildren().indexOf(marker);
+							
+							if (shotIndex >= 0 && shotIndex < cm.getCanvasGroup().getChildren().size() - 1) {
 								cm.getCanvasGroup().getChildren().remove(marker);
 								cm.getCanvasGroup().getChildren().add(cm.getCanvasGroup().getChildren().size(), marker);
 							}
@@ -524,7 +538,7 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 		// 640 x 480
 		cameraTab.setContent(new AnchorPane(cameraCanvasGroup));
 
-		CanvasManager canvasManager = new CanvasManager(cameraCanvasGroup, config, this, webcamName, shotEntries);
+		CanvasManager canvasManager = new CanvasManager(cameraCanvasGroup, this, webcamName, shotEntries);
 		CameraManager cameraManager = camerasSupervisor.addCameraManager(cameraInterface, this, canvasManager);
 
 		cameraManagerTabs.put(cameraTab, cameraManager);
@@ -909,24 +923,25 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 	@Override
 	public void setExercise(TrainingExercise exercise) {
 		try {
-			if (exercise == null)
-			{
+			// If there is a current exercise, ensure it is destroyed
+			// before starting an new one in case it's a projector
+			// exercise that added targets that need to be removed.
 				config.setExercise(null);
-				return;
-			}
 
-			Constructor<?> ctor = exercise.getClass().getConstructor(List.class);
+			if (exercise == null) return;
 
-			List<Target> knownTargets = new ArrayList<Target>();
+			final Constructor<?> ctor = exercise.getClass().getConstructor(List.class);
+
+			final List<Target> knownTargets = new ArrayList<Target>();
 			knownTargets.addAll(getTargets());
 
 			if (projectorSlide.getArenaPane() != null) {
 				knownTargets.addAll(projectorSlide.getArenaPane().getCanvasManager().getTargets());
 			}
 
-			TrainingExercise newExercise = (TrainingExercise) ctor.newInstance(knownTargets);
+			final TrainingExercise newExercise = (TrainingExercise) ctor.newInstance(knownTargets);
 
-			Optional<Plugin> plugin = pluginEngine.getPlugin(newExercise);
+			final Optional<Plugin> plugin = pluginEngine.getPlugin(newExercise);
 			if (plugin.isPresent()) {
 				config.setPlugin(plugin.get());
 			} else {
@@ -955,11 +970,13 @@ public class ShootOFFController implements CameraConfigListener, CameraErrorView
 	@Override
 	public void setProjectorExercise(TrainingExercise exercise) {
 		try {
-			Constructor<?> ctor = exercise.getClass().getConstructor(List.class);
-			TrainingExercise newExercise = (TrainingExercise) ctor
+			config.setExercise(null);
+			
+			final Constructor<?> ctor = exercise.getClass().getConstructor(List.class);
+			final TrainingExercise newExercise = (TrainingExercise) ctor
 					.newInstance(projectorSlide.getArenaPane().getCanvasManager().getTargets());
 
-			Optional<Plugin> plugin = pluginEngine.getPlugin(newExercise);
+			final Optional<Plugin> plugin = pluginEngine.getPlugin(newExercise);
 			if (plugin.isPresent()) {
 				config.setPlugin(plugin.get());
 			} else {

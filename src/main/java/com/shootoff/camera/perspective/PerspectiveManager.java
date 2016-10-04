@@ -55,6 +55,8 @@ public class PerspectiveManager {
 
 	private final static int US_LETTER_WIDTH_MM = 279;
 	private final static int US_LETTER_HEIGHT_MM = 216;
+	
+	private final static int DEFAULT_SHOOTER_DISTANCE = 3000;
 
 	private String calibratedCameraName;
 
@@ -146,11 +148,27 @@ public class PerspectiveManager {
 		this.setProjectorResolution(projectorRes);
 
 		setProjectionSizeFromLetterPaperPixels(paperBounds);
+
+		if (cameraDistance == -1)
+			cameraDistance = DEFAULT_SHOOTER_DISTANCE;
+		if (shooterDistance == -1)
+			shooterDistance = DEFAULT_SHOOTER_DISTANCE;
+		
+		calculateRealWorldSize();
+		
 	}
 
 	public PerspectiveManager(String cameraName, Bounds arenaBounds, Dimension2D feedDims, Dimension2D projectorRes) {
 		this(cameraName, feedDims, arenaBounds);
 		this.setProjectorResolution(projectorRes);
+		
+		if (cameraDistance == -1)
+			cameraDistance = DEFAULT_SHOOTER_DISTANCE;
+		if (shooterDistance == -1)
+			shooterDistance = DEFAULT_SHOOTER_DISTANCE;
+
+		
+		calculateRealWorldSize();
 	}
 
 	public PerspectiveManager(String cameraName, Dimension2D resolution, Bounds arenaBounds) {
@@ -164,6 +182,7 @@ public class PerspectiveManager {
 		}
 
 		setCameraFeedSize(resolution);
+
 	}
 
 	public PerspectiveManager(String cameraName, Bounds arenaBounds, Dimension2D feedDims, Dimension2D paperBounds,
@@ -175,12 +194,12 @@ public class PerspectiveManager {
 		// Camera distance is unknown
 		calculateUnknown();
 
-		// This makes things work easier if the user doesn't really know to set
-		// shooter distance
-		// or the user starts an exercise that uses perspective but didn't set
-		// shooter distance
+		if (cameraDistance == -1)
+			cameraDistance = DEFAULT_SHOOTER_DISTANCE;
 		if (shooterDistance == -1)
-			shooterDistance = cameraDistance;
+			shooterDistance = DEFAULT_SHOOTER_DISTANCE;
+		
+		calculateRealWorldSize();
 	}
 
 	public static boolean isCameraSupported(final String cameraName, Dimension2D desiredResolution) {
@@ -360,8 +379,9 @@ public class PerspectiveManager {
 	protected double getSensorHeight() {
 		return sensorHeight;
 	}
-
-	protected void calculateUnknown() {
+	
+	protected int getUnknownCount()
+	{
 		int unknownCount = 0;
 
 		final double wValues[] = { focalLength, patternWidth, cameraWidth, projectionWidth, sensorWidth, cameraDistance,
@@ -374,6 +394,12 @@ public class PerspectiveManager {
 				unknownCount++;
 			}
 		}
+		
+		return unknownCount;
+	}
+
+	protected void calculateUnknown() {
+		int unknownCount = getUnknownCount();
 
 		if (unknownCount > 1) {
 			// We're okay with two unknowns if they're these two.
@@ -382,7 +408,7 @@ public class PerspectiveManager {
 				return;
 			}
 		} else if (unknownCount == 0) {
-			logger.error("No unknown found");
+			// TODO: Update highest error unknown if this is the case
 			return;
 		}
 
@@ -433,15 +459,23 @@ public class PerspectiveManager {
 
 		else {
 			logger.error("Unknown not supported");
-			return;
 		}
-
-		pxPerMMwide = ((double) projectorResWidth / (double) projectionWidth);
-		pxPerMMhigh = ((double) projectorResHeight / (double) projectionHeight);
+		
+		calculateRealWorldSize();
 
 		if (logger.isTraceEnabled())
 			logger.trace("pW {} pH {} - pxW {} pxH {}", projectionWidth, projectionHeight, pxPerMMwide, pxPerMMhigh);
 	}
+	
+	void calculateRealWorldSize()
+	{
+		if (projectorResWidth > -1 && projectionWidth > -1)
+		{
+			pxPerMMwide = ((double) projectorResWidth / (double) projectionWidth);
+			pxPerMMhigh = ((double) projectorResHeight / (double) projectionHeight);
+		}
+	}
+	
 
 	/**
 	 * Starting with a target's real world width and height in mm, as it appears
@@ -501,8 +535,7 @@ public class PerspectiveManager {
 	}
 
 	public boolean isInitialized() {
-		return projectionWidth > -1 && projectionHeight > -1 && shooterDistance > -1 && cameraDistance > -1 &&
-				pxPerMMhigh > -1;
+		return projectionWidth > -1 && projectionHeight > -1 && shooterDistance > -1 && pxPerMMhigh > -1;
 	}
 
 	public boolean isCameraParamsKnown() {

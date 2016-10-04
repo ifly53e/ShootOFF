@@ -174,9 +174,13 @@ public class Configuration {
 	private boolean autoAdjustExposure = true;
 
 	private static Configuration config = null;
-	public static Configuration getConfig()
-	{
+
+	public static Configuration getConfig() {
 		return config;
+	}
+
+	private static void setConfig(Configuration config) {
+		Configuration.config = config;
 	}
 
 	protected Configuration(InputStream configInputStream, String name) throws IOException, ConfigurationException {
@@ -184,15 +188,14 @@ public class Configuration {
 		configName = name;
 		readConfigurationFile();
 
-		config = this;
-
+		setConfig(this);
 	}
 
 	protected Configuration(String name) throws IOException, ConfigurationException {
 		configName = name;
 		readConfigurationFile();
 
-		config = this;
+		setConfig(this);
 	}
 
 	protected Configuration(InputStream configInputStream, String name, String[] args)
@@ -204,7 +207,7 @@ public class Configuration {
 		parseCmdLine(args); // Parse twice so that we guarantee debug is set and
 							// override config file
 
-		config = this;
+		setConfig(this);
 	}
 
 	/**
@@ -226,14 +229,14 @@ public class Configuration {
 		readConfigurationFile();
 		parseCmdLine(args);
 
-		config = this;
+		setConfig(this);
 	}
 
 	public Configuration(String[] args) throws ConfigurationException {
 		configName = DEFAULT_CONFIG_FILE;
 		parseCmdLine(args);
 
-		config = this;
+		setConfig(this);
 	}
 
 	private void readConfigurationFile() throws ConfigurationException, IOException {
@@ -295,8 +298,7 @@ public class Configuration {
 
 			for (Camera webcam : CameraFactory.getWebcams()) {
 				int cameraIndex = webcamInternalNames.indexOf(webcam.getName());
-				if (cameraIndex >= 0)
-					webcams.put(webcamNames.get(cameraIndex), webcam);
+				if (cameraIndex >= 0) webcams.put(webcamNames.get(cameraIndex), webcam);
 
 			}
 		}
@@ -380,8 +382,7 @@ public class Configuration {
 		}
 
 		if (prop.containsKey(CALIBRATED_FEED_BEHAVIOR_PROP)) {
-			setCalibratedFeedBehavior(
-					CalibrationOption.valueOf(prop.getProperty(CALIBRATED_FEED_BEHAVIOR_PROP)));
+			setCalibratedFeedBehavior(CalibrationOption.valueOf(prop.getProperty(CALIBRATED_FEED_BEHAVIOR_PROP)));
 		}
 
 		if (prop.containsKey(SHOW_ARENA_SHOT_MARKERS)) {
@@ -800,7 +801,8 @@ public class Configuration {
 
 			// Drop WebcamDiscoveryService even lower because it is extremely
 			// noisy
-			Logger webcamDiscoveryLogger = (Logger) loggerContext.getLogger("com.github.sarxos.webcam.WebcamDiscoveryService");
+			Logger webcamDiscoveryLogger = (Logger) loggerContext
+					.getLogger("com.github.sarxos.webcam.WebcamDiscoveryService");
 			webcamDiscoveryLogger.setLevel(Level.WARN);
 		} else {
 			rootLogger.setLevel(Level.WARN);

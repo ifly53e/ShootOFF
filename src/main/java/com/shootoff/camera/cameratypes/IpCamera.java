@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.opencv.core.Mat;
 import org.slf4j.Logger;
@@ -42,13 +43,12 @@ import com.shootoff.camera.CameraManager;
 import com.shootoff.camera.CameraView;
 import com.shootoff.camera.shotdetection.JavaShotDetector;
 import com.shootoff.camera.shotdetection.ShotDetector;
-import com.shootoff.config.Configuration;
 
 public class IpCamera extends CalculatedFPSCamera {
 	private static final Logger logger = LoggerFactory.getLogger(IpCamera.class);
 	private final Webcam ipcam;
 
-	private boolean closing = false;
+	private AtomicBoolean closing = new AtomicBoolean(false);
 
 	public IpCamera(final Webcam ipcam) {
 		this.ipcam = ipcam;
@@ -125,9 +125,9 @@ public class IpCamera extends CalculatedFPSCamera {
 	}
 
 	public synchronized boolean open() {
-		if (isOpen() && !closing) return true;
+		if (isOpen() && !closing.get()) return true;
 
-		closing = false;
+		closing.set(false);
 		boolean open = false;
 		try {
 			open = ipcam.open();
@@ -142,11 +142,11 @@ public class IpCamera extends CalculatedFPSCamera {
 	}
 
 	public synchronized void close() {
-		if (!isOpen() || closing) return;
+		if (!isOpen() || closing.get()) return;
 
 		if (cameraEventListener.isPresent()) cameraEventListener.get().cameraClosed();
 
-		closing = true;
+		closing.set(true);
 
 		if (CameraFactory.isMac()) {
 			new Thread(() -> {
@@ -185,16 +185,15 @@ public class IpCamera extends CalculatedFPSCamera {
 		return ipcam.getViewSize();
 	}
 
-	public ShotDetector getPreferredShotDetector(final CameraManager cameraManager, final Configuration config,
-			final CameraView cameraView) {
+	public ShotDetector getPreferredShotDetector(final CameraManager cameraManager, final CameraView cameraView) {
 		if (JavaShotDetector.isSystemSupported())
-			return new JavaShotDetector(cameraManager, config, cameraView);
+			return new JavaShotDetector(cameraManager, cameraView);
 		else
 			return null;
 	}
 
 	public void run() {
-		while (isOpen() && !closing) {
+		while (isOpen() && !closing.get()) {
 			if (!isImageNew()) continue;
 
 			if (cameraEventListener.isPresent()) cameraEventListener.get().newFrame(getMatFrame());
@@ -205,7 +204,7 @@ public class IpCamera extends CalculatedFPSCamera {
 
 		}
 
-		if (!closing) close();
+		if (!closing.get()) close();
 	}
 
 	public boolean supportsExposureAdjustment() {
