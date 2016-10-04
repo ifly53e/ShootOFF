@@ -87,6 +87,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 
 	private static final int VIEW_WIDTH = 640;
 	private static final int VIEW_HEIGHT = 480;
+	private static final int PS3FPS = 75;
 
 	public static eyecam.ps3eye_t ps3ID = null;
 	private static boolean opened = false;
@@ -145,7 +146,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 
 		if (eyecamLib.ps3eye_count_connected() >= 1) {
 			logger.trace("Found a PS3EYE camera, setting up communications with it");
-			ps3ID = eyecamLib.ps3eye_open(0, getViewWidth(), getViewHeight(), 75,
+			ps3ID = eyecamLib.ps3eye_open(0, getViewWidth(), getViewHeight(), getPS3FPS(),
 					eyecam.ps3eye_format.PS3EYE_FORMAT_BGR);
 			if (ps3ID != null) {
 				logger.trace("Communications with PS3Eye camera established");
@@ -325,6 +326,10 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	public String getName() {
 		return "PS3Eye";
 	}
+	
+	private static int getPS3FPS() {
+		return PS3FPS;
+	}
 
 	private static int getViewWidth() {
 		return VIEW_WIDTH;
@@ -402,7 +407,7 @@ public class PS3EyeCamera extends CalculatedFPSCamera {
 	public synchronized boolean open() {
 		if (opened)
 			return true;
-		ps3ID = eyecamLib.ps3eye_open(0, getViewWidth(), getViewHeight(), 75, eyecam.ps3eye_format.PS3EYE_FORMAT_BGR);
+		ps3ID = eyecamLib.ps3eye_open(0, getViewWidth(), getViewHeight(), getPS3FPS(), eyecam.ps3eye_format.PS3EYE_FORMAT_BGR);
 		if (isOpen())
 			closed = false;
 		return isOpen();

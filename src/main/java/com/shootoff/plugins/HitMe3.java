@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Random;
 
 import com.shootoff.camera.Shot;
+import com.shootoff.camera.cameratypes.PS3EyeCamera;
+import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
 import com.shootoff.targets.Hit;
 import com.shootoff.targets.Target;
 
@@ -129,6 +131,11 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 
 	@Override
 	public void init() {
+		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
+		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
+			logger.debug("did not set autogain to off in TossUp");
+		}
+		myEyecam = null;
 		initColumn();
 		collectSettings();
 		startExercise();

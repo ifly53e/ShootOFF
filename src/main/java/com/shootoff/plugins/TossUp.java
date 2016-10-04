@@ -14,6 +14,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.Point2D;
@@ -137,6 +139,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
 			logger.debug("did not set autogain to off in TossUp");
 		}
+		myEyecam = null;
 		if(!fromReset){
 			String resourceFilename = "arena/backgrounds/hickok45_autumn.gif";
 			InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
@@ -148,6 +151,8 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		collectSettings();
 		startExercise();
 	}//end init
+	
+	static Timeline soundAnimation;
 
 	private void startExercise()  {
 
@@ -210,20 +215,58 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		targetAnimation = new Timeline(new KeyFrame(Duration.millis(timeBetweenTargetMovement * 1000), e -> updateTargets()));
 		targetAnimation.setCycleCount(roundCount);
 
-		playSound("sounds/voice/shootoff-makeready.wav");
-		try {
-			Thread.sleep((long) 3500.);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		playSound("sounds/beep.wav");
+//		playSound("sounds/voice/shootoff-makeready.wav");
+//		try {
+//			Thread.sleep((long) 3500.);
+//		} catch (InterruptedException e1) {
+//			e1.printStackTrace();
+//		}
+//		playSound("sounds/beep.wav");
+		
+		soundAnimation = new Timeline(
+//			    new KeyFrame(Duration.ZERO, new EventHandler<ActionEvent>() {
+//
+//			        @Override
+//			        public void handle(ActionEvent t) {
+//
+//			            //playSound("sounds/voice/shootoff-3.wav");
+//			        }
+//			    }),
+			    new KeyFrame(Duration.seconds(3.2), new EventHandler<ActionEvent>() {
 
-		targetAnimation.play();
-		updateTargets();
+			        @Override
+			        public void handle(ActionEvent t) {
 
-		pauseShotDetection(false);
-		beepTime = System.currentTimeMillis();
-		beepTimeStatic = beepTime;
+			        	playSound("sounds/voice/shootoff-makeready.wav");//playSound("sounds/voice/shootoff-2.wav");
+			        }
+			    }),
+//			    new KeyFrame(Duration.seconds(2.4), new EventHandler<ActionEvent>() {
+//
+//			        @Override
+//			        public void handle(ActionEvent t) {
+//
+//			        	//playSound("sounds/voice/shootoff-1.wav");
+//			        }
+//			    }),
+			    new KeyFrame(Duration.seconds(6.6), new EventHandler<ActionEvent>() {
+
+			        @Override
+			        public void handle(ActionEvent t) {
+			        	playSound("sounds/beep.wav");
+			        	targetAnimation.play();
+			    		updateTargets();
+
+			    		pauseShotDetection(false);
+			    		beepTime = System.currentTimeMillis();
+			    		beepTimeStatic = beepTime;
+			    		soundAnimation.stop();
+			        	
+			        }
+			    })
+			);
+			soundAnimation.play();
+
+		
 
 	}//end start exercise
 
@@ -386,7 +429,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			if (hits+misses !=0) hitPercentage = hits/(double)(hits+misses)*100;
 			//super.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
 
-			thisSuper.getProjArenaController().getCanvasManager().setShowShots(true);
+			//thisSuper.getProjArenaController().getCanvasManager().setShowShots(true);
 
 			//make the shots go away for a cleaner picture
 			for (Shot shot : thisSuper.getProjArenaController().getCanvasManager().getShots()) {
@@ -395,13 +438,15 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 			//reset the target animations so the targets pop back up
 			for (TossUpTarget target : shootTargets) {
-				for (Node node : target.getTarget().getTargetGroup().getChildren()) {
-					TargetRegion r = (TargetRegion) node;
-					if(r.getType()==RegionType.IMAGE){
-						ImageRegion myIR = (ImageRegion) r;
-						myIR.getAnimation().get().reset();
-					}
-				}
+//				for (Node node : target.getTarget().getTargetGroup().getChildren()) {
+//					TargetRegion r = (TargetRegion) node;
+//					if(r.getType()==RegionType.IMAGE){
+//						ImageRegion myIR = (ImageRegion) r;
+//						myIR.getAnimation().get().reset();
+//					}
+//				}
+				target.targetImageRegion.reset();
+				target.setTargetWasHit(false);
 			}
 
 			//so we can remove the shots we added later
@@ -412,41 +457,46 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			for (TossUpTarget b : shootTargets){
 				File theFile = b.getTarget().getTargetFile();
 				String theFileName = theFile.getName();//  getAbsolutePath();//  getName();
-				b.getTarget().setPosition(incX,400);
+				
+				
 				for(Map.Entry<String, List<Point2D>> e: theMap.entrySet()){
 					//synchronized(e){
 					if(theFileName.compareToIgnoreCase(e.getKey())==0 ){
-						//super.showTextOnFeed(String.format("theFileName was found inside update: %s",theFileName));
+						logger.debug(String.format("theFileName was found inside update: %s",theFileName));
 						//synchronized(e){	
 						for (Point2D p2d : e.getValue()){
 							if(p2d.equals(null) )continue;
 								Circle myCircle = new Circle(p2d.getX()+incX, p2d.getY()+400,10,Color.YELLOW);
-								
-								
 								listOfCircles.add(myCircle);
 								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle);
 
 								//Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
 								//this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+								//Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
+								//listOfCircles.add(myCircle2);
+								//thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
+
+							}//end for
+						//}//end synchronized listofcircles
+							for (Point2D p2d : e.getValue()){
 								Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
-								
-								
 								listOfCircles.add(myCircle2);
 								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
 
-								
-								
-							}//end for
-						//}//end synchronized listofcircles
-//							for (Point2D p2d : e.getValue()){
-//								Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
-//								this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
-//							}
-						//}//end for
+								//Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
+								//this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+							
+						}//end for
 					}//end if
 					//}//end synch e
 				}//end for
 
+				//b.getTarget().getTargetGroup().setLayoutY(400);
+				for(int x=0;x<=incX;x++){
+					//b.getTarget().setPosition(x,400);
+					//b.getTarget().getTargetGroup().setLayoutX(x);
+					b.getTarget().getTargetGroup().relocate(x, 400);
+				}
 				incX=incX+225;
 			}//end for
 
@@ -464,10 +514,10 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 			//myLabel.setText(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
 			//thisSuper.getProjArenaController().getCanvasManager().showProjectorMessage(myLabel);
-			myColor = Color.YELLOW;
-			thisSuper.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5),
-					50, (int) super.getArenaHeight() - 600, myColor,
-					Color.BLACK, new Font("TimesRoman", fontSize));
+//			myColor = Color.YELLOW;
+//			thisSuper.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5),
+//					50, (int) super.getArenaHeight() - 600, myColor,
+//					Color.BLACK, new Font("TimesRoman", fontSize));
 			return;
 		}//end if
 
@@ -710,7 +760,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 //		}
 
 		if (hit.isPresent()) {
-			if (shot.getColor().equals(Color.RED)) {
+			if (true){//(shot.getColor().equals(Color.RED)) {
 				hits++;
 				if (hit.get().getHitRegion().tagExists("points")) {
 					logger.debug("points tag present: "+ hit.get().getHitRegion().getTag("points"));
@@ -819,13 +869,13 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		}//end if hitRegion.isPresent
 		else{
 			//its a miss
-			if (shot.getColor().equals(Color.RED)) {
+			//if (shot.getColor().equals(Color.RED)) {
 				score = score - 5;
 				misses++;
 				long scoreTime = finishTime-beepTime;
 				if (scoreTime < 0)scoreTime = 0;
 				//super.showTextOnFeed(String.format("Score: %d  Misses: %d Hits: %d Points Possible: %d Deduction: %d", score-((roundCount*shootCount-hits)*penalty),misses,hits,possiblePoints,((roundCount*shootCount-hits)*penalty) ));
-			}//end if
+			//}//end if
 
 		}//end else
 	}//end function
@@ -841,6 +891,9 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 		if(targetAnimation==null)return;
 		targetAnimation.stop();
+		
+		if(soundAnimation == null)return;
+		soundAnimation.stop();
 
 		//clean up the shots we added
 		//super.showTextOnFeed("canvasGroupSize before: "+canvasGroupSize +" after:"+thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().size());

@@ -767,7 +767,7 @@ public class CameraManager implements ObservableCloseable, CameraEventListener, 
 		if (startTime == 0) resetStartTime();
 
 		//return System.currentTimeMillis() - startTime;
-		logger.debug("returning shot time: {}",System.currentTimeMillis()  );
+		//logger.debug("returning shot time: {}",System.currentTimeMillis()  );
 		return System.currentTimeMillis();
 	}
 

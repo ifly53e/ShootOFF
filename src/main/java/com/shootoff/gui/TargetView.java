@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -65,7 +65,7 @@ import javafx.scene.shape.Shape;
  * also implements required functions like animating targets and determine if a
  * target was hit and where if it was hit. This class needs to be re-implemented
  * to make ShootOFF work on platforms that don't support JavaFX.
- * 
+ *
  * @author phrack
  */
 public class TargetView implements Target {
@@ -97,7 +97,7 @@ public class TargetView implements Target {
 	private boolean right;
 	private double x;
 	private double y;
-	
+
 	private TargetSelectionListener selectionListener;
 
 	public TargetView(File targetFile, Group target, Map<String, String> targetTags, Configuration config,
@@ -150,7 +150,7 @@ public class TargetView implements Target {
 	public boolean isUserDeletable() {
 		return userDeletable;
 	}
-	
+
 	@Override
 	public File getTargetFile() {
 		return targetFile;
@@ -268,7 +268,7 @@ public class TargetView implements Target {
 
 	/**
 	 * Sets whether or not the target should stay in the bounds of its parent.
-	 * 
+	 *
 	 * @param keepInBounds
 	 *            <tt>true</tt> if the target should stay in bounds,
 	 *            <tt>false</tt> otherwise.
@@ -407,15 +407,15 @@ public class TargetView implements Target {
 			getTargetGroup().getChildren().removeAll(resizeAnchors);
 			resizeAnchors.clear();
 		}
-		
+
 		if (selectionListener != null) selectionListener.targetSelected(this, isSelected);
 	}
-	
+
 	@Override
 	public void setTargetSelectionListener(TargetSelectionListener selectionListener) {
 		this.selectionListener = selectionListener;
 	}
-	
+
 	public interface TargetSelectionListener {
 		void targetSelected(Target target, boolean isSelected);
 	}
@@ -567,7 +567,7 @@ public class TargetView implements Target {
 
 		return Optional.empty();
 	}
-	
+
 	public Map<Long, Bounds> timeMap;// = new HashMap<Long, Bounds>();
 	public List<Long> timeList;// = new ArrayList<Long>();
 
@@ -613,15 +613,15 @@ public class TargetView implements Target {
 					//only proceed if the shot is inside the bounds
 					//or do I squeeze the bounds down here instead?
 					Bounds nodeBounds_wholeTarget = ((TargetView) this).timeMap.get(((TargetView) this).timeList.get(counter));
-					logger.debug("HitWindowX is: " + Double.toString((double)config.get().getHitWindowX()/10.0) );
-					logger.debug("HitWindowY is: " + Double.toString((double)config.get().getHitWindowY()/10.0) );
-					
-					
+					//logger.debug("HitWindowX is: " + Double.toString((double)config.get().getHitWindowX()/10.0) );
+					//logger.debug("HitWindowY is: " + Double.toString((double)config.get().getHitWindowY()/10.0) );
+
+
 					double scaleForReducedBoundsX = config.get().getHitWindowX()/10.0;//.4;
 					double scaleForReducedBoundsY = config.get().getHitWindowY()/10.0;//.4;
-					Rectangle rect = new Rectangle(nodeBounds_wholeTarget.getMinX()+((nodeBounds_wholeTarget.getWidth()-nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX)/2), 
-							nodeBounds_wholeTarget.getMinY()+((nodeBounds_wholeTarget.getHeight()-nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY)/2), 
-							nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX,  
+					Rectangle rect = new Rectangle(nodeBounds_wholeTarget.getMinX()+((nodeBounds_wholeTarget.getWidth()-nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX)/2),
+							nodeBounds_wholeTarget.getMinY()+((nodeBounds_wholeTarget.getHeight()-nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY)/2),
+							nodeBounds_wholeTarget.getWidth()*scaleForReducedBoundsX,
 							nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY);
 					//Bounds nodeBounds_reducedTarget  = rect.getLayoutBounds();
 
@@ -642,9 +642,9 @@ public class TargetView implements Target {
 						//user sees hit on target -> computer puts the shot behind the target and does not return a hit
 						//user sees hit in front of target -> computer puts the shot on the target and returns a hit
 
-						logger.debug("DelayValue is: " + Integer.toString((int)this.config.get().getDelayValue()) );
-						logger.debug("timeList value is: " + ((TargetView) this).timeList.get(counter));
-						logger.debug("shot time is: " + shot.getTimestamp());
+						//logger.debug("DelayValue is: " + Integer.toString((int)this.config.get().getDelayValue()) );
+						//logger.debug("timeList value is: " + ((TargetView) this).timeList.get(counter));
+						//logger.debug("shot time is: " + shot.getTimestamp());
 						if(shot.getTimestamp()-((TargetView) this).timeList.get(counter) < this.config.get().getDelayValue()){ //100 ){ //make a slider in preferences to adjust this number?
 							logger.debug("decreasing counter and leaving loop");
 							counter--;
@@ -788,9 +788,9 @@ public class TargetView implements Target {
 
 	private void mouseDragged() {
 		targetGroup.setOnMouseDragged((event) -> {
-			
+
 			if (!resize && !move) return;
-			
+
 			boolean fixedAspectRatioResize = false;
 			double aspectScaleDelta = 0.0;
 
@@ -820,7 +820,7 @@ public class TargetView implements Target {
 
 				return;
 			}
-			
+
 			if ((top || bottom) && (left || right) && event.isControlDown())
 				fixedAspectRatioResize = true;
 
@@ -836,10 +836,10 @@ public class TargetView implements Target {
 
 				double currentWidth = targetGroup.getBoundsInParent().getWidth();
 				double newWidth = currentWidth + gap;
-				
-				
+
+
 				double scaleDelta = (newWidth - currentWidth) / currentWidth;
-				
+
 				if (fixedAspectRatioResize)
 					aspectScaleDelta = scaleDelta;
 
@@ -873,7 +873,7 @@ public class TargetView implements Target {
 					// Target went out of bounds, so go back to the old size
 					targetGroup.setLayoutX(oldLayoutX);
 					targetGroup.setScaleX(oldScaleX);
-					
+
 				} else {
 					// Target stayed in bounds so make sure that unresizable
 					// target regions stay the same size
@@ -887,7 +887,7 @@ public class TargetView implements Target {
 					}
 				}
 			}
-			
+
 			if (top || bottom) {
 				double gap;
 
@@ -896,19 +896,19 @@ public class TargetView implements Target {
 				} else {
 					gap = (event.getY() - targetGroup.getLayoutBounds().getMinY()) * targetGroup.getScaleY();
 				}
-									
+
 
 				double currentHeight = targetGroup.getBoundsInParent().getHeight();
 				double newHeight = currentHeight + gap;
-				
-				if (fixedAspectRatioResize) 
+
+				if (fixedAspectRatioResize)
 				{
 					if ((left && bottom) || (right && top))
 						aspectScaleDelta *= -1.0;
-					
+
 					newHeight = currentHeight + (currentHeight * aspectScaleDelta);
 				}
-				
+
 				double scaleDelta = (newHeight - currentHeight) / currentHeight;
 
 				double currentOriginY = targetGroup.getBoundsInParent().getMinY();
