@@ -47,6 +47,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import com.shootoff.camera.Shot;
+import com.shootoff.camera.cameratypes.PS3EyeCamera;
+import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
+import com.shootoff.config.Configuration;
 import com.shootoff.targets.Hit;
 import com.shootoff.gui.LocatedImage;
 import com.shootoff.targets.Target;
@@ -101,8 +104,23 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		setThisSuper(super.getInstance());
 	}
 
+	private Configuration config;
+	
 	@Override
 	public void init() {
+		this.config = Configuration.getConfig();
+		
+		config.setUseHitMod(true);
+		config.setDelayValue((float) 75);
+		config.setHitWindowX((float) 5);
+		config.setHitWindowY((float) 5);
+		
+		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
+		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
+			logger.debug("did not set autogain to off in Trap");
+		}
+		myEyecam = null;
+		
 		initColumn();
 		collectSettings();
 		startExercise();
@@ -172,11 +190,11 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		//TrapTargetsPane.add(okButton, 1, 5);
 
 		//okButton.setOnAction((e) -> {
-			if (skeetComboBox.getSelectionModel().getSelectedIndex() == 0) {
-				skeet = false;
-			} else {
-				skeet = true;
-			}
+//			if (skeetComboBox.getSelectionModel().getSelectedIndex() == 0) {
+//				skeet = false;
+//			} else {
+//				skeet = true;
+//			}
 
 			targetListComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 				addTargetString = newValue;
@@ -222,7 +240,14 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 		//TrapTargetsStage.setScene(scene);
 		//TrapTargetsStage.showAndWait();
 		skeetComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-			skeetChoice_reset = Integer.parseInt(newValue);
+			//skeetChoice_reset = //Integer.parseInt(newValue);
+			if (skeetComboBox.getSelectionModel().getSelectedIndex() == 0) {
+				skeet = false;
+				skeetChoice_reset = 0;
+			} else {
+				skeet = true;
+				skeetChoice_reset = 1;
+			}
 			stopExercise();
 			startExercise();
 	    });
@@ -264,12 +289,25 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 	private void startExercise() {
 		if(inCollectSettings)return;
 
+		addTargetString_reset = addTargetString;
+		default_target_count_reset = shootCount - 1;
+		theScale_reset = theScale;
+		default_max_rounds_reset = roundCount;
+		decRoundCount = roundCount + 1;
+		score = 0;
+				
 		targetStartingPosX = (thisSuper.getArenaWidth() / 2) - 50;
 		targetStartingPosY = (thisSuper.getArenaHeight() / 2) - 50;
 
-		if (skeet)
-			shootCount = shootCount * 2;
-		addTargets(shootTargets, path + addTargetString + fileType, shootCount);
+		int twiceShootCount = 0;
+		if (skeet){
+			twiceShootCount = shootCount * 2;
+		}else{
+			twiceShootCount = shootCount;
+		}
+		
+		if(shootTargets.size()<shootCount)
+		addTargets(shootTargets, path + addTargetString + fileType, twiceShootCount);
 
 		if (score < 0) {
 			myColor = Color.RED;
@@ -665,7 +703,7 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 			return;
 		}
 
-		if (shot.getColor().equals(Color.RED)) {
+		if (true){// (shot.getColor().equals(Color.RED)) {
 			if (theHit.isPresent()) {
 				for (TrapTarget tt : shootTargets) {
 					if (theHit.get().getTarget().equals(tt.targetLeft)){
@@ -732,6 +770,7 @@ public class Trap extends ProjectorTrainingExerciseBase implements TrainingExerc
 	@Override
 	public void destroy(){
 		stopExercise();
+		config.setUseHitMod(false);
 		super.destroy();
 	}
 

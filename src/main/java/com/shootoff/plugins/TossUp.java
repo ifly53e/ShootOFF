@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,6 +37,7 @@ import javafx.util.Duration;
 import com.shootoff.camera.Shot;
 import com.shootoff.camera.cameratypes.PS3EyeCamera;
 import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
+import com.shootoff.config.Configuration;
 import com.shootoff.targets.Hit;
 import com.shootoff.gui.LocatedImage;
 import com.shootoff.gui.TargetView;
@@ -56,11 +58,15 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	final int DEFAULT_MAX_ROUNDS = 2;
 	final String DEFAULT_TARGET_STRING = "ISSF";
 	final String DEFAULT_SCALE = "three-quarter";
+	final int DEFAULT_MOVEMENT = 1;
+	final int DEFAULT_CRAZY = 1;
 	private int default_target_count_reset = DEFAULT_TARGET_COUNT;
 	private int default_time_between_target_movement_reset = DEFAULT_TIME_BETWEEN_TARGET_MOVEMENT;
 	private int default_max_rounds_reset = DEFAULT_MAX_ROUNDS;
 	private String addTargetString_reset = DEFAULT_TARGET_STRING;
 	private String theScale_reset = DEFAULT_SCALE;
+	private int isMoving_reset = DEFAULT_MOVEMENT;
+	private int crazyMode_reset = DEFAULT_CRAZY;
 	private final static String POINTS_COL_NAME = "Score";
 	private final static int POINTS_COL_WIDTH = 60;
 	private boolean fromReset = false;
@@ -68,7 +74,8 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	private String theScale = "nothing here";
 	private int shootCount = 3;
 	private int roundCount = 5;
-	private int timeBetweenTargetMovement = 9;
+	private int timeBetweenRounds = 9;
+	private int timeBetweenRounds_reset = timeBetweenRounds;
 	private int misses = 0;
 	private int hits = 0;
 	private double newScale = 0;
@@ -115,7 +122,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 		testing = true;
 		this.shootCount = shootCount;
-		this.timeBetweenTargetMovement = timeBetweenTargetMovement;
+		this.timeBetweenRounds = timeBetweenTargetMovement;
 		shootTargets.clear();
 		startExercise();
 
@@ -130,16 +137,25 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		super.addShotTimerColumn(POINTS_COL_NAME, POINTS_COL_WIDTH);
 		//}
 	}
-
+ private Configuration config;
 	@Override
 	public void init() {
 		//thisSuper.getProjArenaController().setBackground(new LocatedImage("file:\\ShootOFF-master\\src\\main\\resources\\arena\\backgrounds\\hickok45_autumn.gif"));
 
+	    this.config = Configuration.getConfig();
+		
+		config.setUseHitMod(true);
+		config.setDelayValue((float) 75);
+		config.setHitWindowX((float) 5);
+		config.setHitWindowY((float) 8);
+	
+		
 		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
 		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
 			logger.debug("did not set autogain to off in TossUp");
 		}
 		myEyecam = null;
+		
 		if(!fromReset){
 			String resourceFilename = "arena/backgrounds/hickok45_autumn.gif";
 			InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
@@ -212,7 +228,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 		//thisSuper.getProjArenaController().getCanvasManager().hideProjectorMessage(myLabel);
 
-		targetAnimation = new Timeline(new KeyFrame(Duration.millis(timeBetweenTargetMovement * 1000), e -> updateTargets()));
+		targetAnimation = new Timeline(new KeyFrame(Duration.millis(timeBetweenRounds * 1000), e -> updateTargets()));
 		targetAnimation.setCycleCount(roundCount);
 
 //		playSound("sounds/voice/shootoff-makeready.wav");
@@ -302,9 +318,15 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		final ComboBox<String> targetListComboBox = new ComboBox<String>(targetList);
 		final ObservableList<String> shootCountList = FXCollections.observableArrayList();
 		final ObservableList<String> roundCountList = FXCollections.observableArrayList();
+		final ObservableList<String> roundTimeList = FXCollections.observableArrayList();
 		final ComboBox<String> shootTargetsComboBox = new ComboBox<String>(shootCountList);
 		final ObservableList<String> maxScale = FXCollections.observableArrayList();
+		final ObservableList<String> tossThemUp = FXCollections.observableArrayList();
+		final ObservableList<String> crazy = FXCollections.observableArrayList();
 		final ComboBox<String> maxScaleComboBox = new ComboBox<String>(maxScale);
+		final ComboBox<String> tossThemUpComboBox = new ComboBox<String>(tossThemUp);
+		final ComboBox<String> crazyComboBox = new ComboBox<String>(crazy);
+		final ComboBox<String> roundTimeComboBox = new ComboBox<String>(roundTimeList);
 		final ComboBox<String> numberOfRoundsComboBox = new ComboBox<String>(roundCountList);//ok to use between 1 and 10
 		//final Scene scene = new Scene(TossUpTargetsPane);
 		//final Button okButton = new Button("OK");
@@ -338,6 +360,32 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			stopExercise();
 			startExercise();
 	    });
+		crazyComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if(crazyComboBox.getSelectionModel().getSelectedIndex()==0){
+				crazyMode = false;
+				
+			}else{
+				crazyMode = true;
+				
+			}
+			stopExercise();
+			startExercise();
+	    });
+		tossThemUpComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if(tossThemUpComboBox.getSelectionModel().getSelectedIndex()==0){
+				isMoving = false;
+				roundTimeComboBox.setDisable(false);
+				crazyComboBox.setDisable(false);
+			}else{
+				isMoving = true;
+				timeBetweenRounds = 9;
+				roundTimeComboBox.getSelectionModel().select(8);
+				roundTimeComboBox.setDisable(true);
+				crazyComboBox.setDisable(true);
+			}
+			stopExercise();
+			startExercise();
+	    });
 		//theScale = maxScaleComboBox.getSelectionModel().getSelectedItem();
 		numberOfRoundsComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 			roundCount = Integer.parseInt(newValue);
@@ -346,6 +394,13 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			startExercise();
 	    });
 		//roundCount = Integer.parseInt(numberOfRoundsComboBox.getSelectionModel().getSelectedItem());
+		
+		roundTimeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			timeBetweenRounds = Integer.parseInt(newValue);
+			timeBetweenRounds_reset = timeBetweenRounds;
+			stopExercise();
+			startExercise();
+	    });
 
 		//TossUpTargetsStage.close();
 	//});//end OKButton
@@ -356,6 +411,10 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	//TossUpTargetsStage.setScene(scene);
 	//TossUpTargetsStage.showAndWait();
 
+			for (int i = 1; i <= 20; i++){
+				roundTimeList.add(Integer.toString(i));
+			}
+			
 			for (int i = 1; i <= 6; i++){
 				shootCountList.add(Integer.toString(i));
 			}
@@ -363,10 +422,21 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			for (int i = 1; i <= MAX_TARGETS; i++){
 				roundCountList.add(Integer.toString(i));
 			}
+			
+			tossThemUp.add("No");
+			tossThemUp.add("Yes");
+			
+			crazy.add("No");
+			crazy.add("Yes");
+			
+			tossThemUpComboBox.getSelectionModel().select(isMoving_reset);
+			TossUpTargetsPane.add(new Label("Toss Targets?:"), 0, 0);
+			TossUpTargetsPane.add(tossThemUpComboBox, 1, 0);
+			
 
 			shootTargetsComboBox.getSelectionModel().select(default_target_count_reset);
-			TossUpTargetsPane.add(new Label("Number of Targets:"), 0, 0);
-			TossUpTargetsPane.add(shootTargetsComboBox, 1, 0);
+			TossUpTargetsPane.add(new Label("Number of Targets:"), 3, 0);
+			TossUpTargetsPane.add(shootTargetsComboBox, 4, 0);
 			//shootTargetsComboBox.setVisible(false);
 
 			maxScale.add("one-quarter");
@@ -374,23 +444,44 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			maxScale.add("three-quarter");
 			maxScale.add("original");
 			maxScale.add("double");
+			
+
 
 			maxScaleComboBox.getSelectionModel().select(theScale_reset);
-			TossUpTargetsPane.add(new Label("Target Scale:"), 3, 0);
-			TossUpTargetsPane.add(maxScaleComboBox, 4, 0);
+			TossUpTargetsPane.add(new Label("Target Scale:"), 6, 0);
+			TossUpTargetsPane.add(maxScaleComboBox, 7, 0);
 
 			numberOfRoundsComboBox.getSelectionModel().select(default_max_rounds_reset);
-			TossUpTargetsPane.add(new Label("Target Rounds:"), 6, 0);
-			TossUpTargetsPane.add(numberOfRoundsComboBox, 7, 0);
+			TossUpTargetsPane.add(new Label("Target Rounds:"), 9, 0);
+			TossUpTargetsPane.add(numberOfRoundsComboBox, 10, 0);
+			
+			roundTimeComboBox.getSelectionModel().select(timeBetweenRounds_reset);
+			TossUpTargetsPane.add(new Label("Time Between Rounds:"), 12, 0);
+			TossUpTargetsPane.add(roundTimeComboBox, 13, 0);
+			
+			crazyComboBox.getSelectionModel().select(crazyMode_reset);
+			TossUpTargetsPane.add(new Label("Crazy Mode?:"), 15, 0);
+			TossUpTargetsPane.add(crazyComboBox, 16, 0);
 
-
+			
+			timeBetweenRounds_reset = timeBetweenRounds;
 		addTargetString_reset = addTargetString;
 		default_target_count_reset = shootCount -1;
-		default_time_between_target_movement_reset = timeBetweenTargetMovement -1;
+		default_time_between_target_movement_reset = timeBetweenRounds -1;
 		theScale_reset = theScale;
+		if(isMoving){
+			isMoving_reset = 1;
+			
+		}else{
+			isMoving_reset = 0;
+		}
+		
 		default_max_rounds_reset = roundCount -1;
 		decRoundCount = roundCount;
 		score = 0;
+		
+		roundTimeComboBox.setDisable(true);
+		crazyComboBox.setDisable(true);
 
 		super.addExercisePane(TossUpTargetsPane);
 
@@ -412,7 +503,9 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 	}
 
 	private void updateTargets() {
-		decRoundCount--;
+		//logger.debug("decRoundCount before: {}", decRoundCount);
+		--decRoundCount;
+		//logger.debug("decRoundCount after: {}", decRoundCount);
 
 		//stop the shooting and present user with consolidated target
 		if(decRoundCount < 0) {
@@ -427,9 +520,9 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 			if (scoreTime < 0)scoreTime = 0;
 			double hitPercentage = 0;
 			if (hits+misses !=0) hitPercentage = hits/(double)(hits+misses)*100;
-			//super.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
+			super.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
 
-			//thisSuper.getProjArenaController().getCanvasManager().setShowShots(true);
+			thisSuper.getProjArenaController().getCanvasManager().setShowShots(true);
 
 			//make the shots go away for a cleaner picture
 			for (Shot shot : thisSuper.getProjArenaController().getCanvasManager().getShots()) {
@@ -458,6 +551,10 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 				File theFile = b.getTarget().getTargetFile();
 				String theFileName = theFile.getName();//  getAbsolutePath();//  getName();
 				
+				//b.getTarget().setPosition(incX,400);
+				//b.getTarget().setVisible(true);
+				
+
 				
 				for(Map.Entry<String, List<Point2D>> e: theMap.entrySet()){
 					//synchronized(e){
@@ -465,38 +562,48 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 						logger.debug(String.format("theFileName was found inside update: %s",theFileName));
 						//synchronized(e){	
 						for (Point2D p2d : e.getValue()){
-							if(p2d.equals(null) )continue;
-								Circle myCircle = new Circle(p2d.getX()+incX, p2d.getY()+400,10,Color.YELLOW);
-								listOfCircles.add(myCircle);
-								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle);
-
-								//Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
-								//this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+							//if(p2d.equals(null) )continue;
+								//Circle myCircle = new Circle(p2d.getX(), p2d.getY(),10,Color.YELLOW);
+								//listOfCircles.add(myCircle);
+								//thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle);
+								//b.getTarget().getTargetGroup().getChildren().add(myCircle);
+								Shot cShot = new Shot(Color.YELLOW, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),10);
+								this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, true);
 								//Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
 								//listOfCircles.add(myCircle2);
 								//thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
-
+								logger.debug("yellow circle");
 							}//end for
 						//}//end synchronized listofcircles
 							for (Point2D p2d : e.getValue()){
-								Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
-								listOfCircles.add(myCircle2);
-								thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
-
-								//Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
-								//this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
-							
+								//Circle myCircle2 = new Circle(p2d.getX()+incX, p2d.getY()+400,3,Color.RED);
+								//Circle myCircle2 = new Circle(p2d.getX(), p2d.getY(),3,Color.RED);
+								//listOfCircles.add(myCircle2);
+								//thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(myCircle2);
+								//b.getTarget().getTargetGroup().getChildren().add(myCircle2);
+								Shot cShot = new Shot(Color.RED, p2d.getX()+incX, p2d.getY()+400, System.currentTimeMillis(),3);
+								this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, true);
+								logger.debug("red circle");
 						}//end for
 					}//end if
 					//}//end synch e
 				}//end for
 
+				//thisSuper.getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(b.getTarget().getTargetGroup());
+				//super.addTarget(theFile, incX, 400);
+				//shootTargets.add((TossUpTarget)super.addTarget(theFile, incX, 400).get());
 				//b.getTarget().getTargetGroup().setLayoutY(400);
-				for(int x=0;x<=incX;x++){
-					//b.getTarget().setPosition(x,400);
+				//for(int x=0;x<=incX;x++){
+				final int incX1 = incX;
+				Platform.runLater(() ->runMe(b.getTarget(), incX1));
+
+					//b.getTarget().setPosition((double)incX,(double)400);
+					//logger.debug("setpos");
+					//b.getTarget().setVisible(true);
+					//logger.debug("setvis");
 					//b.getTarget().getTargetGroup().setLayoutX(x);
-					b.getTarget().getTargetGroup().relocate(x, 400);
-				}
+					//b.getTarget().getTargetGroup().relocate(x, 400);
+				//}
 				incX=incX+225;
 			}//end for
 
@@ -514,10 +621,10 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 			//myLabel.setText(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5 ));
 			//thisSuper.getProjArenaController().getCanvasManager().showProjectorMessage(myLabel);
-//			myColor = Color.YELLOW;
-//			thisSuper.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5),
-//					50, (int) super.getArenaHeight() - 600, myColor,
-//					Color.BLACK, new Font("TimesRoman", fontSize));
+			myColor = Color.YELLOW;
+			thisSuper.showTextOnFeed(String.format("Total Shots Fired: %d%n Hits: %d%n Misses: %d%n Hit Percentage: %f%n Points Possible: %d%n Total Targets: %d%n Targets Not Hit: %d%n Targets Not Hit Deduction: %d%n  Shots Missed Deduction %d%n Score: %d ",misses+hits ,hits,misses,hitPercentage,possiblePoints*roundCount,roundCount*shootCount,roundCount*shootCount-hits,((roundCount*shootCount-hits)*penalty),misses*5,score-((roundCount*shootCount-hits)*penalty)-misses*5),
+					50, (int) super.getArenaHeight() - 600, myColor,
+					Color.BLACK, new Font("TimesRoman", fontSize));
 			return;
 		}//end if
 
@@ -528,6 +635,19 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 		//to reset the round time
 		beepTimeStatic = System.currentTimeMillis();
 	}//end updateTargets
+	
+	public void runMe(Target theTarget, int incX){
+		
+		theTarget.getTargetGroup().setScaleX(1);
+		theTarget.getTargetGroup().setScaleY(1);
+		theTarget.getTargetGroup().setRotate(0.0);
+		
+		theTarget.setPosition((double)incX,(double)400);
+		//logger.debug("setpos");
+		theTarget.setVisible(true);
+		//logger.debug("setvis");
+		
+	}
 
 	public static int getRandom(int from, int to) {
 		Random theRandom = new Random();
@@ -627,7 +747,18 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 				Random myRandom1 = new Random();
 				int x = myRandom1.nextInt(maxX + 1) + 1;
-				this.getTarget().setPosition(x, thisSuper.getArenaHeight());
+				if(isMoving){
+					this.getTarget().setPosition(x, thisSuper.getArenaHeight() + 20);
+					target.getTargetGroup().setRotate(0.0);
+					
+				}else{
+					this.getTarget().setPosition(x, getRandom(50,(int)thisSuper.getArenaHeight()-50));
+					if(crazyMode){
+						target.getTargetGroup().setRotate(getRandom(0,359));
+					}
+					
+				}
+				
 
 				this.setGravity(getRandom(7,15));
 
@@ -636,7 +767,7 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 				//thisSuper.showTextOnFeed("inside moveTarget collisionLoop: "+x+" ,"+ct.toString());
 			}
 
-		if (this.getTargetWasHit()){
+			if (this.getTargetWasHit()){
 //				for (Node node : this.getTarget().getTargetGroup().getChildren()) {
 //					TargetRegion r = (TargetRegion) node;
 //					if(r.getType()==RegionType.IMAGE){
@@ -666,10 +797,18 @@ public class TossUp extends ProjectorTrainingExerciseBase implements TrainingExe
 
 			projectileY =  ( (launchVelocity*Math.sin(angleInRads)*moveTargetTime - getGravity()*moveTargetTime*moveTargetTime/2.0)*-1 ) / yMove;
 
-			target.setPosition(target.getPosition().getX(), thisSuper.getArenaHeight()+projectileY);
+			if(isMoving){
+				target.setPosition(target.getPosition().getX(), thisSuper.getArenaHeight()+projectileY);
+			}else{
+				target.setPosition(target.getPosition().getX(), target.getPosition().getY());
+				
+			}
+			
 
 		}//end moveTarget
 	}//end class TossUpTargets
+	static boolean isMoving = false;
+	static boolean crazyMode = false;
 
 	private void addTargets(List<TossUpTarget> targets, String target, int count) {
 		for (int i = 0; i < count; i++) {

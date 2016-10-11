@@ -55,7 +55,7 @@ import com.shootoff.targets.Target;
  * @author phrack
  */
 public class ProjectorTrainingExerciseBase extends TrainingExerciseBase {
-	private Configuration config;
+	protected Configuration config;
 	private CamerasSupervisor camerasSupervisor;
 	private ProjectorArenaPane arenaPane;
 	private final List<Target> targets = new ArrayList<Target>();

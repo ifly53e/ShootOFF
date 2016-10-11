@@ -64,13 +64,13 @@ public class Shot {
 		this.frame = 0;
 	}
 
-	public Optional<Shot> getMirroredShot() {
-		return mirroredShot;
-	}
+	//public Optional<Shot> getMirroredShot() {
+	//	return mirroredShot;
+	//}
 	
-	public void setMirroredShot(Shot mirroredShot) {
-		this.mirroredShot = Optional.of(mirroredShot);
-	}
+	//public void setMirroredShot(Shot mirroredShot) {
+	//	this.mirroredShot = Optional.of(mirroredShot);
+	//}
 	
 	public Color getColor() {
 		return color;

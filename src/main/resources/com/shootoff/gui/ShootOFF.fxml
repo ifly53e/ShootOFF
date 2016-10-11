@@ -16,7 +16,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
 	fx:controller="com.shootoff.gui.controller.ShootOFFController"
-	style="-fx-border-color: black;-fx-background-image: url('./flag1.gif');-fx-background-position: center center;-fx-background-repeat: stretch;-fx-background-size: 1600 900">
+	style="-fx-border-color: black;-fx-background-image: url('flag1.gif');-fx-background-position: center center;-fx-background-repeat: stretch;-fx-background-size: 1600 900">
 
 	<children>
 
@@ -85,10 +85,11 @@
 			<children>
 				<HBox spacing="30.0" VBox.vgrow="NEVER">
 					<children>
+
 						<TabPane fx:id="cameraTabPane" maxHeight="480" maxWidth="640"
 							minHeight="480" minWidth="640" tabClosingPolicy="UNAVAILABLE"
 							HBox.hgrow="NEVER" style="-fx-border-color: black" />
-
+						
 						<ScrollPane fitToHeight="true" fitToWidth="true"
 							prefViewportWidth="265.0" HBox.hgrow="ALWAYS" style="-fx-border-color: black">
 							<content>

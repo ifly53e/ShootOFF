@@ -45,6 +45,7 @@ import com.shootoff.camera.cameratypes.PS3EyeCamera;
 import com.shootoff.config.Configuration;
 import com.shootoff.config.ConfigurationException;
 import com.shootoff.gui.controller.ShootOFFController;
+import com.shootoff.gui.pane.ProjectorSlide;
 import com.shootoff.plugins.TextToSpeech;
 import com.shootoff.util.HardwareData;
 import com.shootoff.util.VersionChecker;
@@ -62,6 +63,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -586,9 +588,9 @@ public class Main extends Application {
 			 final Scene scene = new Scene(undecorator);
 
 			if (version.isPresent())
-				primaryStage.setTitle("ShootOFF " + version.get());
+				primaryStage.setTitle("Ifly53E Funpack based on ShootOFF " + version.get());
 			else
-				primaryStage.setTitle("ShootOFF");
+				primaryStage.setTitle("Ifly53E Funpack based on ShootOFF");
 			primaryStage.setScene(scene);
 			primaryStage.setWidth(1600);
 			primaryStage.setHeight(911);
@@ -598,6 +600,9 @@ public class Main extends Application {
 			final ShootOFFController controller = (ShootOFFController) loader.getController();
 			controller.init(config);
 			primaryStage.show();
+			controller.projectorButtonClicked(null);
+			//controller.trainingButtonClicked(null);
+			
 		} catch (IOException e) {
 			logger.error("Error loading ShootOFF FXML file", e);
 			return;

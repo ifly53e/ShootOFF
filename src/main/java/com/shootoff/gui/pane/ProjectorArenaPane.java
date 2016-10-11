@@ -1,17 +1,17 @@
 /*
  * ShootOFF - Software for Laser Dry Fire Training
  * Copyright (C) 2016 phrack
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,7 +36,7 @@ import com.shootoff.gui.CalibrationListener;
 import com.shootoff.gui.CalibrationManager;
 import com.shootoff.gui.CanvasManager;
 import com.shootoff.gui.LocatedImage;
-import com.shootoff.gui.MirroredCanvasManager;
+//import com.shootoff.gui.MirroredCanvasManager;
 import com.shootoff.gui.Resetter;
 import com.shootoff.gui.ShotEntry;
 import com.shootoff.gui.controller.ShootOFFController;
@@ -89,7 +89,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	private boolean showedRecalibrationMessage = false;
 
 	private ProjectorArenaPane mirroredArenaPane;
-	
+
 	// Used for testing
 	public ProjectorArenaPane(Configuration config, CanvasManager canvasManager) {
 		this.config = config;
@@ -112,25 +112,27 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		calibrationLabel.setLayoutY(6);
 		calibrationLabel.setPrefSize(628, 90);
 		calibrationLabel.setAlignment(Pos.CENTER);
-				
+
 		this.getChildren().addAll(arenaCanvasGroup, calibrationLabel);
-		
+
 		this.shootOffStage = shootOffStage;
 		this.arenaStage = arenaStage;
 		this.trainingExerciseContainer = trainingExerciseContainer;
-		
-		if (shotTimerModel == null) {
-			canvasManager = new MirroredCanvasManager(arenaCanvasGroup, resetter, "arena", null, this);
-		} else {
-			canvasManager = new MirroredCanvasManager(arenaCanvasGroup, resetter, "arena", shotTimerModel, this);
-		}
+
+//		if (shotTimerModel == null) {
+//			canvasManager = new MirroredCanvasManager(arenaCanvasGroup, resetter, "arena", null, this);
+//		} else {
+//			canvasManager = new MirroredCanvasManager(arenaCanvasGroup, resetter, "arena", shotTimerModel, this);
+//		}
+
+		canvasManager = new CanvasManager(arenaCanvasGroup, resetter, "arena", null);
 
 		this.setPrefSize(640, 480);
-		
+
 		this.setOnKeyPressed((event) -> canvasKeyPressed(event));
-		
+
 		this.setOnMouseEntered((event) -> requestFocus());
-		
+
 		this.setOnMouseClicked((event) -> {
 			canvasManager.toggleTargetSelection(Optional.empty());
 		});
@@ -145,23 +147,23 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 		this.setStyle("-fx-background-color: #333333;");
 	}
-	
-	public void setArenaPaneMirror(ProjectorArenaPane mirroredArenaPane) {
-		this.mirroredArenaPane = mirroredArenaPane;
-	}
-	
-	public ProjectorArenaPane getArenaPaneMirror() {
-		return mirroredArenaPane;
-	}
+
+//	public void setArenaPaneMirror(ProjectorArenaPane mirroredArenaPane) {
+//		this.mirroredArenaPane = mirroredArenaPane;
+//	}
+//
+//	public ProjectorArenaPane getArenaPaneMirror() {
+//		return mirroredArenaPane;
+//	}
 
 	public void setCalibrationManager(CalibrationManager calibrationManager) {
 		this.calibrationManager = calibrationManager;
 	}
-	
+
 
 	private Optional<Screen> getStageHomeScreen(Stage stage) {
 		final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
-		
+
 		final ObservableList<Screen> stageHomeScreens = Screen.getScreensForRectangle(stage.getX() / dpiScaleFactor, stage.getY() / dpiScaleFactor, 1, 1);
 
 		if (stageHomeScreens.isEmpty()) {
@@ -221,7 +223,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 					arenaPosition.getY(), 1, 1);
 
 			if (!screens.isEmpty()) {
-				
+
 				boolean matchedOriginal = false;
 				for (Screen screen : screens)
 				{
@@ -231,18 +233,18 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 						matchedOriginal = true;
 					}
 				}
-				
+
 				if (!matchedOriginal)
 				{
 					arenaStage.setX(arenaPosition.getX());
 					arenaStage.setY(arenaPosition.getY());
 
 					Platform.runLater(() -> toggleFullScreen());
-					
+
 					arenaHome = screens.get(0);
 
 					setArenaScreenOrigin(arenaHome);
-					
+
 					return;
 				}
 
@@ -292,7 +294,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 		if (projector.isPresent()) {
 			final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
-			
+
 			arenaHome = projector.get();
 
 			final double newX = arenaHome.getBounds().getMinX() * dpiScaleFactor;
@@ -305,7 +307,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 			arenaStage.setY(newY + 10);
 
 			detectedProjectorScreen = projector;
-			
+
 			setArenaScreenOrigin(arenaHome);
 
 			Platform.runLater(() -> toggleFullScreen());
@@ -322,7 +324,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 			arenaStage.show();
 		}
 	}
-	
+
 	public Screen getArenaHome() {
 		return arenaHome;
 	}
@@ -330,12 +332,12 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	public Dimension2D getArenaStageResolution() {
 		return new Dimension2D(arenaStage.getWidth(), arenaStage.getHeight());
 	}
-	
+
 	private void setArenaScreenOrigin(Screen screen) {
 		final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
 		final Rectangle2D arenaScreenBounds = screen.getBounds();
 		arenaScreenOrigin = new Point2D(arenaScreenBounds.getMinX() * dpiScaleFactor, arenaScreenBounds.getMinY() * dpiScaleFactor);
-		
+
 		logger.debug("Set arenaScreenOrigin to {}", arenaScreenOrigin);
 	}
 
@@ -356,9 +358,9 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		if (feedCanvasManager != null) {
 			feedCanvasManager.removeDiagnosticMessage(mouseOnArenaLabel);
 		}
-		
+
 		TimerPool.cancelTimer(mouseExitedFuture);
-		
+
 		if (Platform.isFxApplicationThread()) {
 			arenaStage.close();
 		} else {
@@ -370,7 +372,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		background = Optional.ofNullable(img);
 		canvasManager.updateBackground(img);
 	}
-	
+
 	public void setArenaBackground(LocatedImage img, int x, int y) {
 		background = Optional.ofNullable(img);
 		canvasManager.updateBackground(img, x, y);
@@ -406,6 +408,10 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		return config;
 	}
 
+	//final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
+
+	//final ObservableList<Screen> stageHomeScreens = Screen.getScreensForRectangle(stage.getX() / dpiScaleFactor, stage.getY() / dpiScaleFactor, 1, 1);
+
 	public void setCourse(final Course course) {
 		if (course.getBackground().isPresent()) {
 			setArenaBackground(course.getBackground().get());
@@ -421,7 +427,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 		double widthScaleFactor = 1;
 		double heightScaleFactor = 1;
-		
+
 		if (scaleCourse) {
 			widthScaleFactor = getWidth() / course.getResolution().get().getWidth();
 			heightScaleFactor = getHeight() / course.getResolution().get().getHeight();
@@ -470,7 +476,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 			if (fullyManual || movedAfterAuto) {
 				final double dpiScaleFactor = ShootOFFController.getDpiScaleFactorForScreen();
-								
+
 				config.setArenaPosition(arenaStage.getX() / dpiScaleFactor, arenaStage.getY() / dpiScaleFactor);
 				try {
 					config.writeConfigurationFile();
@@ -481,7 +487,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 		}
 	}
-	
+
 
 	private void toggleFullScreen() {
 		arenaStage.setAlwaysOnTop(!arenaStage.isAlwaysOnTop());
@@ -502,17 +508,17 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	public void setCalibrationMessageVisible(final boolean visible) {
 		calibrationLabel.setVisible(visible);
 	}
-	
+
 	@Override
 	public void startCalibration() {
 		setTargetsVisible(false);
-		
-		if (mirroredArenaPane != null) mirroredArenaPane.mirroredStartCalibration();
+
+		//if (mirroredArenaPane != null) mirroredArenaPane.mirroredStartCalibration();
 	}
-	
-	public void mirroredStartCalibration() {
-		startCalibration();
-	}
+
+//	public void mirroredStartCalibration() {
+//		startCalibration();
+//	}
 
 	private volatile boolean mouseInWindow = false;
 	private volatile boolean showingCursorWarning = false;
@@ -570,7 +576,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	public void calibrated(Optional<PerspectiveManager> perspectiveManager) {
 		setCalibrationMessageVisible(false);
 		setTargetsVisible(true);
-		
+
 		cursorWarningToggle(false);
 
 		this.perspectiveManager = perspectiveManager;
@@ -582,22 +588,22 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 			for (Target t : canvasManager.getTargets()) {
 				resizeTargetToDefaultPerspective(t);
 			}
-			
-			if (perspectiveManager.get().isInitialized() && mirroredArenaPane != null) {
-				// Do not play a chime for this message
-				final Label successLabel = mirroredArenaPane.getCanvasManager().addDiagnosticMessage(
-						"Perspective Fully Initialized -- Using Real World Distances", -1, Color.LIMEGREEN);
-				
-				TimerPool.schedule(() -> mirroredArenaPane.getCanvasManager().removeDiagnosticMessage(successLabel), 5000); 
-			}
+
+//			if (perspectiveManager.get().isInitialized() && mirroredArenaPane != null) {
+//				// Do not play a chime for this message
+//				final Label successLabel = mirroredArenaPane.getCanvasManager().addDiagnosticMessage(
+//						"Perspective Fully Initialized -- Using Real World Distances", -1, Color.LIMEGREEN);
+//
+//				TimerPool.schedule(() -> mirroredArenaPane.getCanvasManager().removeDiagnosticMessage(successLabel), 5000);
+//			}
 		}
-		
-		if (mirroredArenaPane != null) mirroredArenaPane.mirrorCalibrated(perspectiveManager);
+
+		//if (mirroredArenaPane != null) mirroredArenaPane.mirrorCalibrated(perspectiveManager);
 	}
-	
-	public void mirrorCalibrated(Optional<PerspectiveManager> perspectiveManager) {
-		calibrated(perspectiveManager);
-	}
+
+//	public void mirrorCalibrated(Optional<PerspectiveManager> perspectiveManager) {
+//		calibrated(perspectiveManager);
+//	}
 
 	/**
 	 * This methods is used by
@@ -607,13 +613,13 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	 * bypassing the arena controller. Thus, the arena controller would not be
 	 * able to configure arena-specific target operations (e.g. setting a
 	 * targets distance).
-	 * 
+	 *
 	 * @param target
 	 *            a new target that was just added to the projector arena
 	 */
 	public void targetAdded(Target target) {
 		resizeTargetToDefaultPerspective(target);
-	
+
 		target.setTargetSelectionListener((toggledTarget, isSelected) -> {
 			if (!isSelected) {
 				if (perspectiveManager.isPresent() && openDistancePane != null)
@@ -631,16 +637,16 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 				showRecalibrationMessage();
 			}
 		});
-		
-		if (mirroredArenaPane != null) mirroredArenaPane.mirrorTargetAdded(target);
+
+		//if (mirroredArenaPane != null) mirroredArenaPane.mirrorTargetAdded(target);
 	}
-	
-	public void mirrorTargetAdded(Target target) {
-		targetAdded(target);
-	}
-	
+
+//	public void mirrorTargetAdded(Target target) {
+//		targetAdded(target);
+//	}
+
 	public void targetRemoved(Target target) {
-		if (openDistancePane != null && target.equals(openDistancePane.getKey())) 
+		if (openDistancePane != null && target.equals(openDistancePane.getKey()))
 			trainingExerciseContainer.getChildren().remove(openDistancePane.getValue());
 	}
 
@@ -652,7 +658,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 	 * webcam feed pointed at the projection. It is also used to disable shot
 	 * detection when necessary to enhance user experience (e.g. when the mouse
 	 * cursor is on the arena because a user is resizing targets).
-	 * 
+	 *
 	 * @param canvasManager
 	 *            the canvas manager showing the webcam feed pointed at the
 	 *            projection for the projection arena controlled by this class
@@ -708,7 +714,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 
 	private void showRecalibrationMessage() {
 		if (showedRecalibrationMessage) return;
-		
+
 		final Alert recalibrationAlert = new Alert(AlertType.ERROR);
 
 		String message = "Data required to set a target's distance is missing and there is no way "
@@ -724,7 +730,7 @@ public class ProjectorArenaPane extends AnchorPane implements CalibrationListene
 		recalibrationAlert.setContentText(message);
 		if (shootOffStage != null) recalibrationAlert.initOwner(shootOffStage);
 		recalibrationAlert.showAndWait();
-		
+
 		showedRecalibrationMessage = true;
 	}
 }

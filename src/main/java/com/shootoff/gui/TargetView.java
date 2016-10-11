@@ -575,11 +575,12 @@ public class TargetView implements Target {
 	public void setPosition(double x, double y) {
 		targetGroup.setLayoutX(x);
 		targetGroup.setLayoutY(y);
+		//targetGroup.relocate(x, y);
 
 		long unModifiedPosTime = System.currentTimeMillis();
 
 		synchronized (timeList){
-			if(timeList.size()>=10){
+			if(timeList.size()>=20){
 				timeList.remove(0);
 			}//end if
 
@@ -625,7 +626,10 @@ public class TargetView implements Target {
 							nodeBounds_wholeTarget.getHeight()*scaleForReducedBoundsY);
 					//Bounds nodeBounds_reducedTarget  = rect.getLayoutBounds();
 
-					if(targetGroup.isVisible() && nodeBounds_wholeTarget.contains(shot.getX(),shot.getY())) logger.debug("NON-reduced HIT");
+					if(targetGroup.isVisible() && nodeBounds_wholeTarget.contains(shot.getX(),shot.getY())) {
+						logger.debug("NON-reduced HIT");
+						//return (isHit(shot));
+					}
 
 
 					if(targetGroup.isVisible() && rect.contains(shot.getX(),shot.getY())){
@@ -762,7 +766,8 @@ public class TargetView implements Target {
 					}//end if group contains
 						counter--;
 					}//end while
-						logger.debug("at the end of altered isHit...returned empty");
+						logger.debug("at the end of altered isHit...returning empty");
+						//return isHit(shot);
 				return Optional.empty();
 			}//end sync timeMap
 

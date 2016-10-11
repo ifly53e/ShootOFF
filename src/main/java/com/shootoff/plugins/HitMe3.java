@@ -19,6 +19,7 @@
 package com.shootoff.plugins;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,12 +28,14 @@ import java.util.Random;
 import com.shootoff.camera.Shot;
 import com.shootoff.camera.cameratypes.PS3EyeCamera;
 import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
+import com.shootoff.gui.LocatedImage;
 import com.shootoff.targets.Hit;
 import com.shootoff.targets.Target;
 
 import javafx.animation.KeyFrame;
 //import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -133,9 +136,15 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 	public void init() {
 		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
 		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
-			logger.debug("did not set autogain to off in TossUp");
+			logger.debug("did not set autogain to off in HitMe");
 		}
 		myEyecam = null;
+		
+		//String resourceFilename = "arena/backgrounds/trap.gif";
+		//InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
+		//LocatedImage img = new LocatedImage(is, resourceFilename);
+		super.setArenaBackground(null);
+		
 		initColumn();
 		collectSettings();
 		startExercise();
@@ -411,7 +420,7 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 
 			for (Point2D p2d : consolidatedList){
 				Shot cShot = new Shot(Color.YELLOW, p2d.getX()+400, p2d.getY()+350, thisSuper.getCamerasSupervisor().getCameraManager(0).getFrameCount(),3);
-				this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, false);
+				this.getProjArenaController().getCanvasManager().addArenaShot(cShot, null, true);
 			}
 
 			//thisSuper.arenaController.getCanvasManager().removeProjectorMessage(myLabel);
@@ -419,8 +428,8 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 			//myLabel.setText(String.format("Score: %f Misses: %d Hits: %d %n Total Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ));
 
 
-			thisSuper.showTextOnFeed(String.format("Score: %f Misses: %d Hits: %d %n Total Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ), 50, (int) super.getArenaHeight() - 200, myColor,
-					Color.YELLOW, new Font("TimesRoman", fontSize));
+			Platform.runLater(()->thisSuper.showTextOnFeed(String.format("Score: %f Misses: %d Hits: %d %n Total Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ), 50, (int) super.getArenaHeight() - 200, myColor,
+					Color.YELLOW, new Font("TimesRoman", fontSize)) );
 
 
 			//thisSuper.getProjArenaController().getCanvasManager().showProjectorMessage(myLabel);
@@ -589,7 +598,7 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 					}
 				}
 
-				if (shot.getColor().equals(Color.RED)) {
+				if (true){// (shot.getColor().equals(Color.RED)) {
 					hits++;
 					score += Integer.parseInt(hit.get().getHitRegion().getTag("points"));
 					//super.showTextOnFeed(String.format("Score: %f  Misses: %d Hits: %d Total Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ));
@@ -612,7 +621,7 @@ public class HitMe3 extends ProjectorTrainingExerciseBase implements TrainingExe
 		}//end if hitRegion.isPresent
 		else{
 			//its a miss
-			if (shot.getColor().equals(Color.RED)) {
+			if (true){//(shot.getColor().equals(Color.RED)) {
 				score = score - 5;
 				misses++;
 				//super.showTextOnFeed(String.format("Score: %f  Misses: %d Hits: %d Total Time: %f  Time Bonus %f", score+( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0 )- (roundCount-hits)*10,misses,hits,(finishTime-beepTime)/1000.0,( (roundCount*timeBetweenTargetMovement)-(finishTime-beepTime)/1000.0) ));

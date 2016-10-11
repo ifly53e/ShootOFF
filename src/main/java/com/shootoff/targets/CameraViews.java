@@ -34,7 +34,8 @@ public interface CameraViews {
 	 *            view widget
 	 */
 	void addNonCameraView(String name, Pane content, CanvasManager canvasManager, boolean select, boolean maximizeView);
-
+	void addCameraView(String name, Node content, CanvasManager canvasManager, boolean select);
+	
 	void removeCameraView(String name);
 	
 	boolean isArenaViewSelected();

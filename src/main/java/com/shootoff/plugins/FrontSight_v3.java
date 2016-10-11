@@ -41,6 +41,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.shootoff.camera.Shot;
+import com.shootoff.camera.cameratypes.PS3EyeCamera;
+import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
 import com.shootoff.courses.Course;
 //import com.shootoff.plugins.FrontSight_v1.delayForShooterReset;
 //import com.shootoff.plugins.FrontSight_v1.presentTarget;
@@ -55,6 +57,7 @@ import com.shootoff.util.NamedThreadFactory;
 import com.shootoff.gui.LocatedImage;
 import com.shootoff.gui.controller.ShootOFFController;
 
+import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -134,6 +137,17 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 	public void init() {
 		super.pauseShotDetection(true);
 
+		config.setUseHitMod(false);
+		//config.setDelayValue((float) 75);
+		//config.setHitWindowX((float) 5);
+		//config.setHitWindowY((float) 8);
+	
+		
+		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
+		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
+			logger.debug("did not set autogain to off in Frontsight");
+		}
+		myEyecam = null;
 
 		initUI();
 		//startRound();
@@ -1371,7 +1385,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 					final long rotationTime = stopTimeR-startTimeR;
 					final long roundTime = stopTimeB-startTimeB;
 
-					showTextOnFeed("FirstShotTime: " + shotTime + " RotationTime: " + rotationTime + " PresentedTime: " + presentedTime + " RoundTime: " + roundTime,false);
+					//showTextOnFeed("FirstShotTime: " + shotTime + " RotationTime: " + rotationTime + " PresentedTime: " + presentedTime + " RoundTime: " + roundTime,false);
 
 					if(logger.isTraceEnabled())logger.debug("in turnAwayTarget 2a scheduling delayforshooterReset");
 					executorService.schedule(new delayForShooterReset(), timeDelayBeforeLineIsSetCallInMilli, TimeUnit.MILLISECONDS);
@@ -1432,7 +1446,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 					final long rotationTime = stopTimeR-startTimeR;
 					final long roundTime = stopTimeB-startTimeB;
 
-					showTextOnFeed("FirstShotTime: " + shotTime + " RotationTime: " + rotationTime + " PresentedTime: " + presentedTime + " RoundTime: " + roundTime, false);
+					//showTextOnFeed("FirstShotTime: " + shotTime + " RotationTime: " + rotationTime + " PresentedTime: " + presentedTime + " RoundTime: " + roundTime, false);
 					//executorService.schedule(new presentTarget(), (long)4.0, TimeUnit.SECONDS);
 					if(manualMode){
 						if(logger.isTraceEnabled())logger.debug("manualMode is true, scheduling delayForShooterReset");
@@ -1447,6 +1461,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 
 						if(logger.isTraceEnabled())logger.debug("manualMode is false, scheduling preview");
 						executorService.schedule(new preview(), (long)4.0, TimeUnit.SECONDS);
+						
 					}
 
 				}
@@ -1460,6 +1475,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 		@Override
 		public Void call() {
 			thisSuper.pauseShotDetection(true);
+			setColumnText(theShotTime, subTarget, points1,count1);
 			//showTextOnFeed("in stopShotDetection");
 
 			return null;
@@ -1478,33 +1494,45 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 
 	}//end class
 
-	int count1 = 0;
+	static int count1 = 0;
+	static String subTarget = "noTarget";
+	static String points1 = "noPoints";
+	static double theShotTime = 0;
 	@Override
 	public void shotListener(Shot shot, Optional<Hit> hit) {
 		if (hit.isPresent()) {
 			stopShotTimer = System.currentTimeMillis();
 			shotTime = (stopShotTimer - startShotTimer);
 			stopShotTimer = 0;
-			String subTarget = "noTarget";
-			String points1 = "noPoints";
-			double theShotTime = (double)shotTime/1000.0;
-			setShotTimerColumnText("ShotTime", String.format("%6f", theShotTime));
+
+			theShotTime = (double)shotTime/1000.0;
+			//setShotTimerColumnText("ShotTime", String.format("%6f", theShotTime));
 
 			if (hit.get().getHitRegion().tagExists("points")) {
 				points1 = hit.get().getHitRegion().getTag("points");
-				setShotTimerColumnText("Points", ""+ hit.get().getHitRegion().getTag("points"));
+				//setShotTimerColumnText("Points ", points1);
 				count1++;
-				setShotTimerColumnText("Number", ""+ count1);
+				//setShotTimerColumnText("Number", Integer.toString(count1));
 			}//end tagexists
 			if (hit.get().getHitRegion().tagExists("subtarget")) {
 				subTarget = hit.get().getHitRegion().getTag("subtarget");
-				setShotTimerColumnText("Subtarget", ""+ hit.get().getHitRegion().getTag("subtarget"));
+				//setShotTimerColumnText("Subtarget", subTarget);
 				Point2D thePoint = new Point2D(hit.get().getImpactX(), hit.get().getImpactY());
 				hitMap.put(hit.get().getHitRegion().getTag("subtarget"), thePoint);
 				//getProjArenaController().getCanvasManager().getCanvasGroup().getChildren().add(new javafx.scene.shape.Circle(thePoint.getX(), thePoint.getY(),10,Color.YELLOW));
 			}//end tagexists
-			showTextOnFeed(String.format("ShotTime: %6f, %s, points: %s ", theShotTime,subTarget,points1));
+			
+			showTextOnFeed(String.format("ShotTime: %6f, %s, points: %s ", theShotTime,subTarget,points1),50, 0, Color.BLACK,
+					Color.YELLOW, new Font("TimesRoman", 45));
+			
 		}//end isPresent
+	}
+	
+	public void setColumnText (double theShotTime, String subTarget, String points1, int count1){
+		setShotTimerColumnText("ShotTime", String.format("%6f", theShotTime));
+		//setShotTimerColumnText("Points ", points1);
+		//setShotTimerColumnText("Number", Integer.toString(count1));
+		setShotTimerColumnText("Subtarget", subTarget);
 	}
 
 
@@ -1529,7 +1557,7 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 
 		}//end if
 		else{
-			showTextOnFeed("myShotList size was empty");
+			logger.debug("myShotList size was empty");
 		}//end else
 		//super.myShootOffController.toggleArenaShotsClicked(new ActionEvent());
 		repeatExercise = false;
@@ -1573,12 +1601,6 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 						+ "times are geared for the Handgun Combat Master course.");
 	}
 
-	@Override
-	public void destroy() {
-		repeatExercise = false;
-		executorService.shutdownNow();
-		super.destroy();
-	}
 
 	private void ThreeYdLine(){
 
@@ -1718,11 +1740,12 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 		this.targets.clear();
 		this.targets = super.setCourse(new File("courses/7ydLineHostOdd_v4.course"));
 		//5TargetLineHigh.jpg x="-545.097737" y="-801.234857
-		//String resourceFilename = "arena/backgrounds/5TargetLineHigh.jpg";
+		//String resourceFilename = "arena/backgrounds/5TargetLineHigh.png";
 		//String resourceFilename = "targets/5TargetLineHigh.png";
 		//InputStream is = this.getClass().getClassLoader().getResourceAsStream(resourceFilename);
 		//LocatedImage img = new LocatedImage(is, resourceFilename);
 		//super.setArenaBackground(img, -545, -801);
+		//super.setArenaBackground(img);
 		presentationTimeforTargetInMilli = (long) 1500;
 		if(manualMode){
 			setupRound();
@@ -1809,6 +1832,15 @@ public class FrontSight_v3 extends ProjectorTrainingExerciseBase implements Trai
 
 
 	}
+	
+	@Override
+	public void destroy() {
+		reset();
+		repeatExercise = false;
+		executorService.shutdownNow();
+		super.destroy();
+	}
+
 
 
 }//end class

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <course>
-	<target file="targets\frontsight_7yardLine.target" x="-545.097737" y="-801.234857" width="2578.987305" height="2244.779053" />
+	<background url="file:/C:/Users/Tim/Desktop/laser/nightly/targets/5TargetLineHigh.png" isResource="false" />
 	<target file="targets\frontsight_target6_hostage_V9.target" x="402.000000" y="489.000000" width="248.571442" height="371.142853" />
 	<target file="targets\frontsight_target8_hostage_V9.target" x="1388.000000" y="490.000000" width="248.571472" height="371.142853" />
 	<target file="targets\frontsight_target7_oddAngle_V10.target" x="889.000000" y="492.000000" width="248.571411" height="371.142853" />

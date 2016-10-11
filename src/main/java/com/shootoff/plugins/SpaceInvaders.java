@@ -40,6 +40,8 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import com.shootoff.camera.Shot;
+import com.shootoff.camera.cameratypes.PS3EyeCamera;
+import com.shootoff.camera.cameratypes.PS3EyeCamera.eyecam;
 //import com.shootoff.gui.Hit;
 import com.shootoff.targets.Hit;
 import com.shootoff.gui.LocatedImage;
@@ -77,7 +79,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 	private static boolean firstSpeedIncrease = true;
 	private static boolean secondSpeedIncrease = false;
 	private static boolean thirdSpeedIncrease = false;
-	private static int invaderTotal = 70;
+	private static int invaderTotal = 60;
 	private static int ufoMove = 1;
 	private static int highScore = 0;
 	private static int misses = 0;
@@ -112,6 +114,13 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 
 	@Override
 	public void init() {
+		config.setUseHitMod(false);
+		
+		eyecam myEyecam = (eyecam) PS3EyeCamera.getEyecamLib();
+		if (myEyecam.ps3eye_set_parameter(com.shootoff.camera.cameratypes.PS3EyeCamera.ps3ID, eyecam.ps3eye_parameter.PS3EYE_AUTO_GAIN, 0) == -1 ){
+			logger.debug("did not set autogain to off in space invaders init");
+		}
+		myEyecam = null;
 		initColumn();
 		startExercise();
 	}// end init
@@ -260,13 +269,13 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 
 	// targetAnimation timeline calls updateTargets...controls a round
 	private void updateTargets() {
-		if (hitCount % 10 == 0 && !ufoWasStarted && hitCount > 0 && !ufoAtBoundry) {
-			int startXPos = 300;
+		if (hitCount % 8 == 0 && !ufoWasStarted && hitCount > 0 && !ufoAtBoundry) {
+			int startXPos = 400;
 			if (getRandom(2, 4) == 3) {
 				startXPos = 1200;
 				ufoMove = Math.abs(ufoMove) * -1;
 			} else {
-				startXPos = 300;
+				startXPos = 400;
 				ufoMove = Math.abs(ufoMove);
 
 			}
@@ -416,6 +425,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 		public void moveUFO() {
 			target.setPosition(target.getPosition().getX() + 20 * ufoMove, target.getPosition().getY());
 			if (target.getPosition().getX() < leftBoundry || target.getPosition().getX() > rightBoundry) {
+				logger.debug("left boundry: {} xPos: {}", leftBoundry, target.getPosition().getX());
 				moveUFO_TL.stop();
 				target.getTargetGroup().setVisible(false);
 				clip.stop();
@@ -499,6 +509,7 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 	public void shotListener(Shot shot, Optional<Hit> theHit) {
 		if (theHit.isPresent()) {
 			if (theHit.get().getTarget().equals(newSpaceInvadersUFO.getTarget())) {
+				logger.debug("ufo hit: {}",newSpaceInvadersUFO.getTarget());
 				clip.stop();
 				newSpaceInvadersUFO.targetWasHit = true;
 				ufoWasStarted = false;
@@ -543,9 +554,9 @@ public class SpaceInvaders extends ProjectorTrainingExerciseBase implements Trai
 			playSound("sounds/shoot.wav");
 			if (score < 0) {
 				myColorFontBackground = Color.BLACK;
-			} else {
-				myColorFontBackground = Color.BLACK;
-			}
+			} //else {
+//				myColorFontBackground = Color.BLACK;
+//			}
 			thisSuper.showTextOnFeed(
 					String.format("SCORE<1>\tHI-SCORE\tKILLS<1>  %n  %d \t\t  %04d \t\t   %d", score, highScore,
 							hitCount),

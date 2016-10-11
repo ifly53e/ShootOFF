@@ -129,7 +129,7 @@ public class TrainingExerciseBase {
 
 		if (cameraViews.getArenaView().isPresent()) {
 			final Label exerciseLabel = new Label();
-			exerciseLabel.setTextFill(Color.WHITE);
+			exerciseLabel.setTextFill(Color.BLACK);
 			CameraView arenaView = cameraViews.getArenaView().get();
 			arenaView.addChild(exerciseLabel);
 			exerciseLabels.put(arenaView, exerciseLabel);

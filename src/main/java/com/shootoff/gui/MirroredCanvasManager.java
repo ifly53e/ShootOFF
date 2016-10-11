@@ -165,15 +165,16 @@ public class MirroredCanvasManager extends CanvasManager {
 	@Override
 	public void addShot(Shot shot, boolean isMirroredShot) {
 		final Shot mirroredShot = new Shot(shot.getColor(), shot.getX(), shot.getY(), shot.getTimestamp(), (int) shot.getMarker().getRadiusX());
-		shot.setMirroredShot(mirroredShot);
-		mirroredShot.setMirroredShot(shot);
-		mirroredManager.mirrorAddShot(mirroredShot);
-		super.addShot(shot, isMirroredShot);
+		//shot.setMirroredShot(mirroredShot);
+		//mirroredShot.setMirroredShot(shot);
+		//mirroredManager.mirrorAddShot(mirroredShot);
+		//super.addShot(shot, isMirroredShot);
+		super.addShot(shot, false);
 	}
 	
-	public void mirrorAddShot(Shot shot) {
-		super.addShot(shot, true);
-	}
+//	public void mirrorAddShot(Shot shot) {
+//		super.addShot(shot, true);
+//	}
 	
 	@Override
 	public boolean addArenaShot(Shot shot, Optional<String> videoString, boolean isMirroredShot) {
